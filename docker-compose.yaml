@@ -1,0 +1,33 @@
+version: "3.8"
+services:
+  # sql:
+  #   image: "mcr.microsoft.com/mssql/server:2019-latest"
+  #   volumes:
+  #     - sqldata:/var/opt/mssql
+  #   environment:
+  #     - ACCEPT_EULA=y
+  #     - SA_PASSWORD=Password123!
+  #   ports:
+  #     - "1444:1433"
+  #   container_name: webbot_sql
+  #   hostname: webbot_sql
+  backend:
+    image: "radirgomez/webbot_api"
+    ports:
+      - "5000:5000"
+    # depends_on:
+    #   - sql
+    container_name: webbot_api
+    hostname: webbot_api
+    volumes:
+      - sqldata:/app/database
+  frontend:
+    image: "radirgomez/webbot_web"
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    container_name: webbot_web
+    hostname: webbot_web
+volumes:
+  sqldata:

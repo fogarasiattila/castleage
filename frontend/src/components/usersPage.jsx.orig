@@ -1,0 +1,170 @@
+import React, { Component } from "react";
+import UsersList from "./userslist";
+import Console from "./console";
+import Userprofile from "./userprofile";
+
+class UsersPage extends Component {
+  state = {
+    consoleMessage: "",
+    selectedPlayer: {
+      displayName: "",
+      username: "",
+      playerCode: "",
+      armyCode: ""
+    }
+  };
+
+  async componentDidMount() {
+    await this.props.updatePlayersAsync();
+  }
+
+  handleClearConsole = () => {
+    this.setState({ consoleMessage: "" });
+  };
+
+  onSelectPlayer = p => {
+    const selectedPlayer = this.props.players.find(
+      ply => ply.id == p.target.value
+    );
+    const tempState = { ...this.state };
+    tempState.selectedPlayer = selectedPlayer;
+    this.setState(tempState);
+  };
+
+  render() {
+    return (
+      <React.Fragment>
+        <div className="form-group">
+          <select
+            className="custom-select"
+            required
+            onChange={this.onSelectPlayer}
+          >
+            {this.props.players.map(p => (
+              <option value={p.id} key={p.id}>
+                {p.username}
+              </option>
+            ))}
+          </select>
+          <div className="invalid-feedback">
+            Example invalid custom select feedback
+          </div>
+        </div>
+<<<<<<< HEAD
+        <form className="needs-validation" noValidate>
+          <div className="form-row">
+            <div className="col-md-4 mb-3">
+              <label htmlFor="validationTooltip02">Full name</label>
+              <input
+                type="text"
+                className="form-control"
+                id="validationTooltip02"
+                placeholder="name"
+                value={this.state.selectedPlayer.displayName}
+                required
+              />
+              <div className="valid-tooltip">Looks good!</div>
+            </div>
+            <div className="col-md-4 mb-3">
+              <label htmlFor="validationTooltipUsername">Username</label>
+              <div className="input-group">
+                <div className="input-group-prepend">
+                  <span
+                    className="input-group-text"
+                    id="validationTooltipUsernamePrepend"
+                  >
+                    @
+                  </span>
+                </div>
+                <input
+                  type="text"
+                  className="form-control"
+                  id="validationTooltipUsername"
+                  placeholder="Username"
+                  aria-describedby="validationTooltipUsernamePrepend"
+                  value={this.state.selectedPlayer.username}
+                  required
+                />
+                <div className="invalid-tooltip">
+                  Please choose a unique and valid username.
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="col-md-6 mb-3">
+              <label htmlFor="validationTooltip03">Password</label>
+              <input
+                type="password"
+                className="form-control"
+                id="validationTooltip03"
+                placeholder="password"
+                // value={this.state.selectedPlayer.password}
+                required
+              />
+              <div className="invalid-tooltip">
+                Please provide a valid city.
+              </div>
+            </div>
+            <div className="col-md-3 mb-3">
+              <label htmlFor="validationTooltip04">Playercode</label>
+              <input
+                type="text"
+                className="form-control"
+                id="validationTooltip04"
+                placeholder="playercode"
+                value={
+                  this.state.selectedPlayer.playerCode
+                    ? this.state.selectedPlayer.playerCode
+                    : ""
+                }
+                required
+              />
+              <div className="invalid-tooltip">
+                Please provide a valid state.
+              </div>
+            </div>
+            <div className="col-md-3 mb-3">
+              <label htmlFor="validationTooltip05">ArmyCode</label>
+              <input
+                type="text"
+                className="form-control"
+                id="validationTooltip05"
+                placeholder="armycode"
+                value={
+                  this.state.selectedPlayer.armyCode
+                    ? this.state.selectedPlayer.armyCode
+                    : ""
+                }
+                required
+              />
+              <div className="invalid-tooltip">Please provide a valid zip.</div>
+            </div>
+=======
+        <div className="row">
+          <div className="col-sm">
+            <UsersList
+              players={this.props.players}
+              onSelect={this.props.handlePlayerSelect}
+            />
+          </div>
+          <div className="col-sm">
+            <Userprofile />
+          </div>
+          <div className="col-sm">
+            <Console
+              output={this.state.consoleMessage}
+              onClear={this.handleClearConsole}
+            />
+>>>>>>> refs/remotes/origin/master
+          </div>
+          <button className="btn btn-primary" type="submit">
+            Submit form
+          </button>
+        </form>
+      </React.Fragment>
+    );
+  }
+}
+
+export default UsersPage;
