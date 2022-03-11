@@ -40,6 +40,14 @@ class ActionPage extends Component {
     await this.actionOnPlayers((p) => this.sendArchiveRequestAsync(p));
   };
 
+  handleDailySpin = async () => {
+    await this.actionOnPlayers((p) => this.sendDailySpinRequestAsync(p));
+  };
+
+  handleCollectTerritory = async () => {
+    await this.actionOnPlayers((p) => this.sendCollectTerritoryAsync(p));
+  };
+
   handlePrayer = async () => {
     await this.actionOnPlayers((p) => this.sendCrystalPrayerRequestAsync(p));
   };
@@ -132,6 +140,18 @@ class ActionPage extends Component {
     });
   }
 
+  async sendDailySpinRequestAsync(player) {
+    return await axios.post(`http://localhost/api/action/dailyspin`, {
+      username: player.username,
+    });
+  }
+
+  async sendCollectTerritoryAsync(player) {
+    return await axios.post(`http://localhost/api/action/collectterritory`, {
+      username: player.username,
+    });
+  }
+
   async sendCrystalPrayerRequestAsync(player) {
     return await axios.post(`http://localhost/api/action/crystalprayer`, {
       username: player.username,
@@ -187,8 +207,10 @@ class ActionPage extends Component {
               onLogin={this.handleLogin}
               onLogout={this.handleLogout}
               onCollectResource={this.handleCollectResource}
-              onArchive={this.handleArchive}
               onCrystalPrayer={this.handlePrayer}
+              onArchive={this.handleArchive}
+              onDailySpin={this.handleDailySpin}
+              onCollectTerritory={this.handleCollectTerritory}
               onDemiPower={this.handleDemiPower}
               onCustomUri={this.handleCustomUri}
               // onColosseum={this.handleColosseum}

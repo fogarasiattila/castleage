@@ -13,15 +13,13 @@ namespace webbot.Controllers
     [Route("api/[controller]/[action]")]
     public class PlayerController : Controller
     {
-        private readonly IPlayerRepository playerRepository;
         private readonly IUnitOfWork uow;
         private readonly IMapper mapper;
 
-        public PlayerController(IPlayerRepository playerRepository, IUnitOfWork uow, IMapper mapper)
+        public PlayerController(IUnitOfWork uow, IMapper mapper)
         {
             this.uow = uow;
             this.mapper = mapper;
-            this.playerRepository = playerRepository;
         }
 
         [HttpGet()]
@@ -31,24 +29,18 @@ namespace webbot.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> Update([FromBody()] Player player)
-        {
-
-            return Ok(player.Username);
-        }
-
-        [HttpPost()]
         [HttpPut()]
         public async Task<IActionResult> New([FromBody()] Player player)
         {
-            await this.playerRepository.NewPlayer(player);
-            return Ok();
+            await uow.PlayerRepository.NewPlayer(player);
+            if (!await uow.CompleteAsync()) return BadRequest("Nem sikerült a felhasználó mentése!");
+            return Ok("Az új felhasználót mentettük!");
         }
 
         [HttpGet()]
         public async Task<IEnumerable<PlayerDto>> GetPlayers()
         {
-            var players = await this.playerRepository.GetPlayersAsync();
+            var players = await  uow.PlayerRepository.GetPlayersAsync();
             return mapper.Map<List<Player>, List<PlayerDto>>(players);
         }
 
@@ -56,15 +48,16 @@ namespace webbot.Controllers
         [HttpPut()]
         public async Task<IActionResult> Modify([FromBody()] Player player)
         {
-            if (await this.playerRepository.ModifyPlayer(player)) return Ok();
-            else return BadRequest();
-
+            if (!await uow.PlayerRepository.ModifyPlayer(player)) return BadRequest("Sikertelen felhasználó módosítás!");
+            await uow.CompleteAsync();
+            return Ok("Sikeres felhasználó módosítás!");
         }
 
         [HttpDelete("{id}")]
         public async Task Delete(int id)
         {
-            await this.playerRepository.Delete(id);
+            await uow.PlayerRepository.Delete(id);
+            await uow.CompleteAsync();
 
         }
 

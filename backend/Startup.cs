@@ -13,7 +13,7 @@ using Microsoft.AspNetCore.Mvc;
 using webbot.Models;
 using botservice;
 using Microsoft.OpenApi.Models;
-
+using Microsoft.Extensions.Hosting;
 
 namespace webbot
 {
@@ -33,7 +33,9 @@ namespace webbot
         {
             //TODO: FACTORY?
             //https://espressocoder.com/2018/10/08/injecting-a-factory-service-in-asp-net-core/
-            services.AddHostedService<ColosseumBattleService>();
+            //services.AddHostedService<ColosseumBattleService>();
+            services.AddSingleton<ColosseumBattleService>();
+            services.AddSingleton<IHostedService>( sp => sp.GetRequiredService<ColosseumBattleService>() );
             services.AddMvc();//.SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddHttpContextAccessor();
             services.AddSingleton<IParseHtml, ParseHtml>();

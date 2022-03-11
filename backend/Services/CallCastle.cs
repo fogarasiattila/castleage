@@ -35,6 +35,7 @@ namespace backend.Services
         private const string baseUrl = "https://web3.castleagegame.com";
         private const string mainPageUrl = baseUrl + "/castle_ws/index.php?";
         private const string demiPowerUrl = baseUrl + "/castle_ws/symbols.php";
+        private const string territoryUrl = baseUrl + "/castle_ws/territory.php";
         private const string resultsMainWrapperXPath = "//div[@id=\"results_main_wrapper\"]";
         private const string playerNotLoggedInMessage = "Player not logged in";
         private const string logoutUri = "/castle_ws/connect_login.php?platform_action=CA_web3_logout";
@@ -49,6 +50,8 @@ namespace backend.Services
         private const string colosseumTokenTimerXPath = "//*[@id=\"colosseum_token_time_value\"]";
         private const string collectResourceUrl = baseUrl + "/castle_ws/player_monster_list.php?";
         private const string collectResourceAjax = "action=conquestResourceCollectHeader" + ajax2x;
+        private const string collectTerritory = "collect=1" + ajax2x;
+        private const string dailySpin = "spin=1&ajax=1";
         private const string archiveAjax = "action=enableItemArchiveBonusHeader" + ajax2x;
         private const string conquestDemiCollectAjax = "action=conquestDemiCollectHeader" + ajax2x;
         private const string resultPopupMessageXpath = "//div[@class=\"result_popup_message\"]";
@@ -126,38 +129,8 @@ namespace backend.Services
             Player.Cookie = null;
         }
 
-        //public async Task DemiPowerAsync()
-        //{
-        //    var body = "ajax=1";
-        //    var uri = "/castle_ws/symbols.php";
-
-        //    if (booster)
-        //    {
-        //        Parallel.For(0, 100, async (i) =>
-        //        {
-        //            await PostRequestUrlEncodedAsync(body, uri);
-        //        });
-
-        //    }
-        //    else
-        //    {
-        //        await PostRequestUrlEncodedAsync(body, uri);
-        //    }
-        //}
-
         public async Task<(ReturnCodeEnum, string)> CollectResourceAsync()
         {
-            //if (booster)
-            //{
-            //    Parallel.For(0, 100, async (i) =>
-            //    {
-            //        await PostRequestUrlEncodedAsync(collectResourceAjax, collectResourceUrl);
-            //    });
-
-            //    return (ReturnCodeEnum.Ok, "Boosted, no parsing...");
-            //}
-
-
             var response = await PostRequestUrlEncodedAsync(collectResourceAjax, collectResourceUrl);
 
             if (response.StatusCode == HttpStatusCode.Redirect) return (ReturnCodeEnum.NotLoggedIn, playerNotLoggedInMessage);
@@ -172,15 +145,6 @@ namespace backend.Services
 
         public async Task<(ReturnCodeEnum, string)> ArchiveAsync()
         {
-            //if (booster)
-            //{
-            //    Parallel.For(0, 100, async (i) =>
-            //    {
-            //        await PostRequestUrlEncodedAsync(archiveAjax, mainPageUrl);
-            //    });
-            //    return (ReturnCodeEnum.Ok, "Boosted, no parsing...");
-            //}
-
             var response = await PostRequestUrlEncodedAsync(archiveAjax, mainPageUrl);
 
             if (response.StatusCode == HttpStatusCode.Redirect) return (ReturnCodeEnum.NotLoggedIn, playerNotLoggedInMessage);
@@ -195,14 +159,6 @@ namespace backend.Services
 
         public async Task<(ReturnCodeEnum, string)> DemiPowerAsync(string id)
         {
-            //if (booster)
-            //{
-            //    Parallel.For(0, 100, async (i) =>
-            //    {
-            //        await PostRequestUrlEncodedAsync($"symbol={id}&action=tribute{ajax2x}", demiPowerUrl);
-            //    });
-            //    return (ReturnCodeEnum.Ok, "Boosted, no parsing...");
-            //}
             var response = await PostRequestUrlEncodedAsync($"symbol={id}&action=tribute{ajax2x}", demiPowerUrl);
 
             if (response.StatusCode == HttpStatusCode.Redirect) return (ReturnCodeEnum.NotLoggedIn, playerNotLoggedInMessage);
@@ -217,15 +173,6 @@ namespace backend.Services
 
         public async Task<(ReturnCodeEnum, string)> CrystalPrayerAsync()
         {
-            //if (booster)
-            //{
-            //    Parallel.For(0, 100, async (i) =>
-            //    {
-            //        await PostRequestUrlEncodedAsync(conquestDemiCollectAjax, mainPageUrl);
-            //    });
-            //    return (ReturnCodeEnum.Ok, "Boosted, no parsing...");
-            //}
-
             var response = await PostRequestUrlEncodedAsync(conquestDemiCollectAjax, mainPageUrl);
 
             if (response.StatusCode == HttpStatusCode.Redirect) return (ReturnCodeEnum.NotLoggedIn, playerNotLoggedInMessage);
@@ -238,30 +185,6 @@ namespace backend.Services
             return (ReturnCodeEnum.Ok, parsedPage);
 
         }
-
-        //public async Task<(ReturnCodeEnum, string)> BoostAsync(string body, string uri)
-        //{
-
-        //    //var response = await 
-
-        //    Parallel.For(0, 100, async (i) =>
-        //    {
-
-        //        await PostRequestUrlEncodedAsync(body, uri);
-        //    });
-
-
-
-
-
-        //    //if (response.StatusCode == HttpStatusCode.Redirect) return (ReturnCodeEnum.NotLoggedIn, playerNotLoggedInMessage);
-
-        //    //var content = await response.Content.ReadAsStringAsync();
-
-        //    //var parsedPage = parseHtml.InnerText(content, resultsMainWrapperXPath);
-
-        //    return (ReturnCodeEnum.Ok, "");
-        //}
 
         public async Task<(ReturnCodeEnum, string)> CustomRequestAsync(string uri, bool booster)
         {
@@ -471,6 +394,34 @@ namespace backend.Services
             }
 
             logger.LogInformation($"{Player.Username}: Kilépek a csata algoritmusból!");
+        }
+
+        public async Task<(ReturnCodeEnum, string)> DailySpinAsync()
+        {
+            var response = await PostRequestUrlEncodedAsync(dailySpin, mainPageUrl);
+
+            if (response.StatusCode == HttpStatusCode.Redirect) return (ReturnCodeEnum.NotLoggedIn, playerNotLoggedInMessage);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var parsedPage = parseHtml.InnerText(content, resultsMainWrapperXPath);
+            //var parsedPage = parseHtml.InnerText(content, resultPopupMessageXpath);
+
+            return (ReturnCodeEnum.Ok, parsedPage);
+        }
+
+        public async Task<(ReturnCodeEnum, string)> CollectTerritoryAsync()
+        {
+            var response = await PostRequestUrlEncodedAsync(collectTerritory, territoryUrl);
+
+            if (response.StatusCode == HttpStatusCode.Redirect) return (ReturnCodeEnum.NotLoggedIn, playerNotLoggedInMessage);
+
+            var content = await response.Content.ReadAsStringAsync();
+
+            var parsedPage = parseHtml.InnerText(content, resultsMainWrapperXPath);
+            //var parsedPage = parseHtml.InnerText(content, resultPopupMessageXpath);
+
+            return (ReturnCodeEnum.Ok, parsedPage);
         }
     }
 }

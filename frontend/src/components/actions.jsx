@@ -58,6 +58,26 @@ class Actions extends Component {
         </button>
         <br />
         <br />
+        <div>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={this.props.onDailySpin}
+          >
+            Daily Spin
+          </button>
+        </div>
+        <br />
+        <div>
+          <button
+            type="button"
+            className="btn btn-primary"
+            onClick={this.props.onCollectTerritory}
+          >
+            Collect Territory
+          </button>
+        </div>
+        <br />
         <button
           type="button"
           className="btn btn-info"

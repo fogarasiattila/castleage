@@ -11,6 +11,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using webbot.Controllers;
+using webbot.Enums;
 using webbot.Services;
 
 namespace botservice
@@ -19,7 +20,7 @@ namespace botservice
     {
         private readonly ILogger<ColosseumBattleService> _logger;
         private readonly IServiceScopeFactory serviceScopeFactory;
-        private IUnitOfWork uow;
+        private IUnitOfWork unitOfWork;
         private readonly CultureInfo provider = CultureInfo.InvariantCulture;
         private List<Task<Player>> battleTasks = new List<Task<Player>>();
 
@@ -37,9 +38,14 @@ namespace botservice
         protected override async Task ExecuteAsync(CancellationToken cancellationToken)
         {
             using var scope = serviceScopeFactory.CreateScope();
-            var playerRepository = scope.ServiceProvider.GetRequiredService<IPlayerRepository>();
-            var players = await playerRepository.GetPlayersAsync();
-            uow = scope.ServiceProvider.GetRequiredService<IUnitOfWork>();
+
+            unitOfWork = (scope.ServiceProvider.GetRequiredService<IUnitOfWork>());
+            var players = await unitOfWork.PlayerRepository.GetPlayersAsync();
+            var startBattleSettings = await unitOfWork.SettingsRepository.GetStartColosseumBattle();
+
+            //Ha ki van kapcsolva a colosseum csata, nem indítjuk el
+            if (startBattleSettings == State.Off) return;
+
 
             while (!cancellationToken.IsCancellationRequested)
             {
@@ -119,7 +125,7 @@ namespace botservice
             }
 
             _logger.LogInformation($"{callCastle.Player.Username}: új cookie-t kérünk...");
-            if (await callCastle.LoginAsync()) await uow.CompleteAsync();
+            if (await callCastle.LoginAsync()) await unitOfWork.CompleteAsync();
         }
 
         private bool WithinDueTime()
@@ -130,5 +136,15 @@ namespace botservice
                     (currentTime - colosseumOpeningTimeEvening >= TimeSpan.Zero) && (currentTime - colosseumClosingTimeEvening <= TimeSpan.Zero);
         }
 
+        public override Task StopAsync(CancellationToken cancellationToken)
+        {
+            _logger.LogInformation("A ColosseumBattleService leáll, amint minden maradék TASK kifut!");
+            return base.StopAsync(cancellationToken);
+        }
+
+        public override Task StartAsync(CancellationToken cancellationToken)
+        {
+            return base.StartAsync(cancellationToken);
+        }
     }
 }

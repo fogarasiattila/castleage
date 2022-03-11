@@ -16,5 +16,6 @@ namespace backend.Persistence
         }
 
         public DbSet<Player> Players { get; set; }
+        public DbSet<Settings> Settings { get; set; }
     }
 }

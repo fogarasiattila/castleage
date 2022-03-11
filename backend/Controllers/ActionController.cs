@@ -6,7 +6,9 @@ using System.Threading.Tasks;
 using AutoMapper;
 using backend.Persistence;
 using backend.Services;
+using botservice;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Hosting;
 using webbot.Models;
 
 namespace webbot.Controllers
@@ -20,6 +22,7 @@ namespace webbot.Controllers
         private readonly ICallCastle callCastle;
         private readonly IUnitOfWork uow;
         private readonly IMapper mapper;
+        private readonly ColosseumBattleService hostedService;
 
         public ActionController(IPlayerRepository playerRepository, ICallCastle callCastle, IUnitOfWork uow, IMapper mapper)
         {
@@ -39,26 +42,6 @@ namespace webbot.Controllers
 
             return Ok(returnmessage);
         }
-        
-        //[HttpPost()]
-        //public async Task<IActionResult> BoostTest([FromBody] Player player)
-        //{
-        //    this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
-            
-        //         await callCastle.BoostAsync("action=buy_goods&goods_id=5&ajax=1", "https://web3.castleagegame.com/castle_ws/five_battle_points_shop.php");
-
-        //    return Ok("boost happened");
-        //}
-
-        //[HttpPost()]
-        //public async Task<IActionResult> MultiRollCollectCrystal([FromBody] Player player)
-        //{
-        //    this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
-
-        //    await callCastle.BoostAsync("action=conquestDemiCollectHeader&ajax=1&ajax=1", "https://web3.castleagegame.com/castle_ws/five_vs_five.php?");
-
-        //    return Ok("multiroll crystal collection (prayer)");
-        //}
 
         [HttpPost()]
         public async Task<IActionResult> Archive([FromBody] Player player)
@@ -87,6 +70,28 @@ namespace webbot.Controllers
         {
             this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
             var (returncode, returnmessage) = await callCastle.CrystalPrayerAsync();
+
+            if (returncode == ReturnCodeEnum.NotLoggedIn) return Accepted(returnmessage);
+
+            return Ok(returnmessage);
+        }
+
+        [HttpPost()]
+        public async Task<IActionResult> DailySpin([FromBody] Player player)
+        {
+            this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
+            var (returncode, returnmessage) = await callCastle.DailySpinAsync();
+
+            if (returncode == ReturnCodeEnum.NotLoggedIn) return Accepted(returnmessage);
+
+            return Ok(returnmessage);
+        }
+        
+        [HttpPost()]
+        public async Task<IActionResult> CollectTerritory([FromBody] Player player)
+        {
+            this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
+            var (returncode, returnmessage) = await callCastle.CollectTerritoryAsync();
 
             if (returncode == ReturnCodeEnum.NotLoggedIn) return Accepted(returnmessage);
 

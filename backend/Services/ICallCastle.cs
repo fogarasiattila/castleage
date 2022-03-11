@@ -29,6 +29,8 @@ namespace backend.Services
         Task ColosseumAttackOpponent(HttpResponseMessage response);
 
         Task<(ReturnCodeEnum, string)> CrystalPrayerAsync();
+        Task<(ReturnCodeEnum, string)> DailySpinAsync();
+        Task<(ReturnCodeEnum, string)> CollectTerritoryAsync();
 
         Task<(ReturnCodeEnum, string)> DemiPowerAsync(string id);
         Task<(ReturnCodeEnum, string)> CustomRequestAsync(string uri, bool booster);

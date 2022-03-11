@@ -19,24 +19,18 @@ namespace backend.Persistence
         Task<bool> ModifyPlayer(Player player);
 
         Task Delete(int id);
-
-        void ResetCache();
     }
 
 
     public class PlayerRepository : IPlayerRepository
     {
         private readonly BotContext botContext;
-        private readonly IUnitOfWork uow;
         private readonly IMapper mapper;
-        private readonly IMemoryCache memoryCache;
 
-        public PlayerRepository(BotContext botContext, IUnitOfWork uow, IMapper mapper, IMemoryCache memoryCache)
+        public PlayerRepository(BotContext botContext, IMapper mapper)
         {
             this.botContext = botContext;
-            this.uow = uow;
             this.mapper = mapper;
-            this.memoryCache = memoryCache;
         }
 
         //cache control!
@@ -47,13 +41,9 @@ namespace backend.Persistence
             if (players.SingleOrDefault(p => p.Username == player.Username) == null)
             {
                 botContext.Players.Add(player);
-                await this.uow.CompleteAsync();
             }
-
-            //ResetCache();
         }
 
-        //cache control!
         public async Task<bool> ModifyPlayer(Player playerDto)
         {
 
@@ -61,22 +51,13 @@ namespace backend.Persistence
 
             if (player == null) return false;
 
-            mapper.Map<Player, Player>(playerDto, player);
-
-            await uow.CompleteAsync();
-
-            //ResetCache();
+            botContext.Update(mapper.Map<Player, Player>(playerDto, player));
 
             return true;
         }
 
         public async Task<List<Player>> GetPlayersAsync()
         {
-            //if (!memoryCache.TryGetValue("Players", out List<Player> players))
-            //{
-            //    memoryCache.Set("Players", await this.botContext.Players.ToListAsync());
-            //}
-            //return memoryCache.Get("Players") as List<Player>;
             return await this.botContext.Players.OrderBy(p => p.Username).ToListAsync();
         }
 
@@ -86,18 +67,9 @@ namespace backend.Persistence
             return players.SingleOrDefault(p => p.Username == username);
         }
 
-        //cache control!
         public async Task Delete(int id)
         {
-            botContext.Players.Remove(botContext.Players.Find(id));
-            await uow.CompleteAsync();
-            
-            //ResetCache();
-        }
-
-        public void ResetCache()
-        {
-            memoryCache.Remove("Players");
+            botContext.Players.Remove(await botContext.Players.FindAsync(id));
         }
     }
 }
