@@ -21,11 +21,27 @@ namespace webbot.Persistence
             return (await botContext.Settings.FirstOrDefaultAsync(r => r.Name == DatabaseConsts.StartColosseumBattleSetting)).State;
         }
 
-        public async Task ToggleStartColosseumBattle()
+        //public async Task StartColosseumBattle()
+        //{
+        //    //var setting = await botContext.Settings.FirstOrDefaultAsync(r => r.Name == DatabaseConsts.StartColosseumBattleSetting);
+        //    //setting.State = State.On;
+        //    //botContext.Update(setting);
+        //}
+
+        //public async Task StopColosseumBattle()
+        //{
+        //    //var setting = await botContext.Settings.FirstOrDefaultAsync(r => r.Name == DatabaseConsts.StartColosseumBattleSetting);
+        //    //setting.State = State.Off;
+        //    //botContext.Update(setting);
+        //}
+
+        public async Task<State> ToggleColosseumBattle()
         {
             var setting = await botContext.Settings.FirstOrDefaultAsync(r => r.Name == DatabaseConsts.StartColosseumBattleSetting);
             setting.State = setting.State == State.Off ? State.On : State.Off;
             botContext.Update(setting);
+
+            return setting.State;
         }
     }
 }

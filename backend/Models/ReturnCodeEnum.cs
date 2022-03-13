@@ -11,6 +11,7 @@ namespace webbot.Models
         Ok,
         NotLoggedIn,
         NoContent,
+        Redirect
     }
 
 }

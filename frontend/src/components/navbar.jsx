@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 import "./webbot.css";
 import { Link } from "react-router-dom";
 
@@ -27,7 +27,7 @@ const NavBar = () => {
               Users <span className="sr-only">(current)</span>
             </Link>
           </li>
-          <li className="nav-item">
+          {/* <li className="nav-item">
             <a className="nav-link" href="#">
               Link
             </a>
@@ -66,9 +66,9 @@ const NavBar = () => {
             >
               Disabled
             </a>
-          </li>
+          </li> */}
         </ul>
-        <form className="form-inline my-2 my-lg-0">
+        {/* <form className="form-inline my-2 my-lg-0">
           <input
             className="form-control mr-sm-2"
             type="search"
@@ -81,7 +81,7 @@ const NavBar = () => {
           >
             Search
           </button>
-        </form>
+        </form> */}
       </div>
     </nav>
   );

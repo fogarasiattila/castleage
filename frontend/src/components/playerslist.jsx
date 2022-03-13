@@ -1,4 +1,4 @@
-import React, { Component } from "react";
+import React from "react";
 
 const PlayersList = ({ players, onSelect, onChanged, selectAll }) => {
   return (

@@ -5,12 +5,12 @@ import NavBar from "./components/navbar";
 import ActionPage from "./components/actionPage.jsx";
 import UsersPage from "./components/usersPage.jsx";
 import axios from "axios";
-import http from "./services/httpService";
 
 class App extends Component {
   state = {
     players: [],
     selectAllPlayersCheckbox: false,
+    colosseumBattleState: false,
   };
 
   updatePlayersAsync = async () => {
@@ -74,17 +74,25 @@ class App extends Component {
             />
             <Route
               path="/"
-              render={(props) => (
-                <ActionPage
-                  {...props}
-                  players={this.state.players}
-                  updatePlayersAsync={this.updatePlayersAsync}
-                  handlePlayerSelect={this.handlePlayerSelect}
-                  handleCheckedAllPlayers={this.handleCheckedAllPlayers}
-                  selectAllPlayers={this.selectAllPlayers}
-                  expiredCookie={this.expiredCookie}
-                />
-              )}
+              render={(props) => {
+                return (
+                  <ActionPage
+                    {...props}
+                    players={this.state.players}
+                    updatePlayersAsync={this.updatePlayersAsync}
+                    handlePlayerSelect={this.handlePlayerSelect}
+                    handleCheckedAllPlayers={this.handleCheckedAllPlayers}
+                    selectAllPlayers={this.selectAllPlayers}
+                    expiredCookie={this.expiredCookie}
+                    colosseumBattleStartStopState={
+                      this.state.colosseumBattleState
+                    }
+                    getColosseumBattleStartStopState={
+                      this.getColosseumBattleStartStopState
+                    }
+                  />
+                );
+              }}
             />
           </Switch>
         </main>

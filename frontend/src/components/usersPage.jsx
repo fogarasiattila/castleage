@@ -1,5 +1,4 @@
 import React, { Component } from "react";
-import PlayersList from "./playerslist";
 import Console from "./console";
 import axios from "axios";
 
@@ -33,7 +32,7 @@ class UsersPage extends Component {
 
   onSelectPlayer = (p) => {
     const selectedPlayer = this.props.players.find(
-      (ply) => ply.id == p.target.value
+      (ply) => ply.id === p.target.value
     );
     let tempStatePlayer = { ...this.state.selectedPlayer };
     tempStatePlayer = selectedPlayer ? selectedPlayer : this.newPlayer;
@@ -61,7 +60,7 @@ class UsersPage extends Component {
     }
 
     this.setState({
-      consoleMessage: this.state.consoleMessage + `${message}` + `\n`,
+      consoleMessage: this.state.consoleMessage + `${message}\n`,
     });
 
     await this.props.updatePlayersAsync();

@@ -1,4 +1,6 @@
 import React, { Component } from "react";
+import Checkbox from "./checkbox";
+//http://react.tips/checkboxes-in-react/
 
 const ambrosia = "1";
 const malekus = "2";
@@ -7,11 +9,14 @@ const aurora = "4";
 const azeron = "5";
 
 class Actions extends Component {
-  state = {};
+  state = {
+    colosseumBattleState: false,
+  };
   booster = React.createRef();
   customUri = React.createRef();
 
   render() {
+    // console.log("rendering Actions");
     return (
       <div className="actionboxstyle">
         <button
@@ -29,6 +34,12 @@ class Actions extends Component {
         >
           Logout
         </button>
+        <Checkbox
+          label={"Colosseum Battle"}
+          id={"battleswitch"}
+          isSelected={this.props.isSelected}
+          onCheckboxChange={this.props.toggleColosseumBattle}
+        ></Checkbox>
         <br />
         <br />
         <button
@@ -153,11 +164,6 @@ class Actions extends Component {
             </button>
           </div>
         </div>
-        {/* <br />
-        <br />
-        <button type="button" className="btn btn-dark" onClick={onColosseum}>
-          Colosseum
-        </button> */}
       </div>
     );
   }

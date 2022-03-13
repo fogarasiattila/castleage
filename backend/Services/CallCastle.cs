@@ -38,6 +38,7 @@ namespace backend.Services
         private const string territoryUrl = baseUrl + "/castle_ws/territory.php";
         private const string resultsMainWrapperXPath = "//div[@id=\"results_main_wrapper\"]";
         private const string playerNotLoggedInMessage = "Player not logged in";
+        private const string redirectMessage = "HTTP Redirect jött válaszul...";
         private const string logoutUri = "/castle_ws/connect_login.php?platform_action=CA_web3_logout";
         private const string colosseumMatchingUrl = baseUrl + "/castle_ws/five_vs_five.php";
         private const string colosseumMatchingAjax = "matching=matching_request" + ajax2x;
@@ -414,7 +415,8 @@ namespace backend.Services
         {
             var response = await PostRequestUrlEncodedAsync(collectTerritory, territoryUrl);
 
-            if (response.StatusCode == HttpStatusCode.Redirect) return (ReturnCodeEnum.NotLoggedIn, playerNotLoggedInMessage);
+            if (response.StatusCode == HttpStatusCode.Redirect) return (ReturnCodeEnum.Redirect, redirectMessage);
+            //if (response.StatusCode == HttpStatusCode.Redirect) return (ReturnCodeEnum.NotLoggedIn, playerNotLoggedInMessage);
 
             var content = await response.Content.ReadAsStringAsync();
 

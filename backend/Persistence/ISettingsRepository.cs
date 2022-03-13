@@ -6,6 +6,8 @@ namespace webbot.Persistence
     public interface ISettingsRepository
     {
         Task<State> GetStartColosseumBattle();
-        Task ToggleStartColosseumBattle();
+        Task<State> ToggleColosseumBattle();
+        //Task StartColosseumBattle();
+        //Task StopColosseumBattle();
     }
 }

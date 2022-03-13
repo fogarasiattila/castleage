@@ -8,17 +8,35 @@ import axios from "axios";
 class ActionPage extends Component {
   state = {
     consoleMessage: "",
+
+    colosseumBattleState: false,
   };
 
   async componentDidMount() {
+    // console.log("actionPage.jsx component did mount");
+    let tempState = { ...this.state };
+
     try {
       await this.props.updatePlayersAsync();
     } catch (ex) {
-      let tempConsoleState = this.state.consoleMessage;
-      tempConsoleState += `\n` + ex;
-      this.setState({ consoleMessage: tempConsoleState });
+      tempState.consoleMessage += `\n` + ex;
     }
+
+    try {
+      const { data } = await this.getColosseumBattleStartStopState();
+      tempState.colosseumBattleState = data === 1;
+    } catch {
+      tempState.consoleMessage += `\nError: Nem sikerült a colosseum battle state lekérdezése, elérhető az API?`;
+    }
+    // console.log("setting state in actionPage.jsx componentDidMount");
+    this.setState(tempState);
   }
+
+  getColosseumBattleStartStopState = async () => {
+    return await axios.get(
+      "http://localhost/api/bot/getcolosseumbattlestartstopstate"
+    );
+  };
 
   handleClearConsole = () => {
     this.setState({ consoleMessage: "" });
@@ -65,9 +83,9 @@ class ActionPage extends Component {
     );
   };
 
-  // handleColosseum = async () => {
-  //   await this.actionOnPlayers((p) => this.sendColosseumBattleAsync(p));
-  // };
+  handleToggleColosseumBattle = async () => {
+    await this.toggleColosseumBattleAsync();
+  };
 
   async actionOnPlayers(action) {
     const selectedPlayers = this.props.players.filter((p) => p.isSelected);
@@ -114,6 +132,20 @@ class ActionPage extends Component {
         console.log("task finished");
       })
     );
+  }
+
+  async toggleColosseumBattleAsync() {
+    const { data } = await axios.get(
+      `http://localhost/api/bot/toggleColosseumBattle`
+    );
+
+    let tempState = { ...this.state };
+    tempState.colosseumBattleState = data === 1;
+    tempState.consoleMessage =
+      data === 1
+        ? `${tempState.consoleMessage}\nElindítjuk a Colosseum csata service-t...`
+        : `${tempState.consoleMessage}\nLeállítjuk a Colosseum csata service-t, miután kifut minden TASK...`;
+    this.setState(tempState);
   }
 
   async sendLoginRequestAsync(player) {
@@ -180,6 +212,7 @@ class ActionPage extends Component {
   // }
 
   render() {
+    // console.log("rendering ActionPage");
     return (
       <React.Fragment>
         <div className="row">
@@ -213,7 +246,8 @@ class ActionPage extends Component {
               onCollectTerritory={this.handleCollectTerritory}
               onDemiPower={this.handleDemiPower}
               onCustomUri={this.handleCustomUri}
-              // onColosseum={this.handleColosseum}
+              isSelected={this.state.colosseumBattleState}
+              toggleColosseumBattle={this.handleToggleColosseumBattle}
             />
           </div>
 
