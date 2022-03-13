@@ -55,6 +55,16 @@ namespace webbot
                     UseCookies = false,
 
                 };
+            }).ConfigurePrimaryHttpMessageHandler(() =>
+            {
+
+                var handler = new HttpClientHandler()
+                {
+                    ServerCertificateCustomValidationCallback = (r, c, ch, s) => true,
+                    AutomaticDecompression = System.Net.DecompressionMethods.All
+                };
+
+                return handler;
             });
             services.AddCors(o =>
             {

@@ -39,7 +39,7 @@ namespace webbot.Controllers
             return "CastleAge WebBot version 0.2";
         }
 
-        //[HttpGet()]
+        [HttpGet()]
         public async Task<IActionResult> StartColosseumBattle()
         {
             //await unitOfWork.SettingsRepository.ToggleColosseumBattle();
@@ -49,7 +49,7 @@ namespace webbot.Controllers
             return Ok("Starting colosseum...");
         }
 
-        //[HttpGet()]
+        [HttpGet()]
         public async Task<IActionResult> StopColosseumBattle()
         {
             //await unitOfWork.SettingsRepository.ToggleColosseumBattle();

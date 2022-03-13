@@ -18,6 +18,8 @@ using System.Text;
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using Microsoft.Net.Http.Headers;
+using MediaTypeHeaderValue = System.Net.Http.Headers.MediaTypeHeaderValue;
 
 namespace backend.Services
 {
@@ -83,6 +85,7 @@ namespace backend.Services
         {
             var request = new HttpRequestMessage(HttpMethod.Get, uri);
             request.Headers.Add("Cookie", this.Player.Cookie);
+            request.Headers.Add(HeaderNames.AcceptEncoding, "gzip, deflate, br");
             var result = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
             return result;
         }
@@ -94,6 +97,7 @@ namespace backend.Services
             request.Content = content;
             request.Content.Headers.ContentType = new MediaTypeHeaderValue(mediaTypeUrlEncoded);
             request.Headers.Add("Cookie", this.Player.Cookie);
+            request.Headers.Add(HeaderNames.AcceptEncoding, "gzip, deflate, br");
             //request.Headers.Add("X-Requested-With", "XMLHttpRequest");
             //request.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/64.0.3282.140 Safari/537.36 Edge/18.17763");
             var result = await httpClient.SendAsync(request, HttpCompletionOption.ResponseHeadersRead);
@@ -189,17 +193,53 @@ namespace backend.Services
 
         public async Task<(ReturnCodeEnum, string)> CustomRequestAsync(string uri, bool booster)
         {
+            //https://www.michalbialecki.com/en/2018/04/19/how-to-send-many-requests-in-parallel-in-asp-net-core/
             if (booster)
             {
-                Parallel.For(0, 100, async (i) =>
+                //Parallel.For(0, 100, async (i) =>
+                //{
+                //    await GetRequestAsync(uri);
+                //});
+
+                
+
+                var requests = Enumerable.Range(0, 50).Select(r =>
                 {
-                    await GetRequestAsync(uri);
+                    var request = new HttpRequestMessage(HttpMethod.Post, uri)
+                    {
+                        Headers =
+                        {
+                            { HeaderNames.Cookie, this.Player.Cookie },
+                            { HeaderNames.XRequestedWith, "XMLHttpRequest" },
+                            { HeaderNames.AcceptEncoding, "gzip, deflate, br" }
+
+                        }, 
+                        Content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("ajax", "1") })
+                    };
+
+                    return request;                
                 });
+
+                var tasks = requests.Select(req => httpClient.SendAsync(req));
+                await Task.WhenAll(tasks);
+
                 return (ReturnCodeEnum.Ok, "Boosted, no parsing...");
             }
             else
             {
-                await GetRequestAsync(uri);
+                var request = new HttpRequestMessage(HttpMethod.Post, uri)
+                {
+                    Headers =
+                    {
+                        { HeaderNames.Cookie, this.Player.Cookie },
+                        { HeaderNames.XRequestedWith, "XMLHttpRequest" },
+                        { HeaderNames.AcceptEncoding, "gzip, deflate, br" }
+                    },
+                    Content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("ajax", "1") })
+                };
+                
+                await httpClient.SendAsync(request);
+                
                 return (ReturnCodeEnum.Ok, "Custom uri, no parsing...");
             }
         }
