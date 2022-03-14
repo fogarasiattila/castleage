@@ -55,17 +55,20 @@ namespace webbot
                     UseCookies = false,
 
                 };
-            }).ConfigurePrimaryHttpMessageHandler(() =>
+            })
+            .ConfigurePrimaryHttpMessageHandler(() =>
             {
 
                 var handler = new HttpClientHandler()
                 {
                     ServerCertificateCustomValidationCallback = (r, c, ch, s) => true,
-                    AutomaticDecompression = System.Net.DecompressionMethods.All
+                    AutomaticDecompression = System.Net.DecompressionMethods.All,
+                    AllowAutoRedirect = false
                 };
 
                 return handler;
-            });
+            })
+            ;
             services.AddCors(o =>
             {
                 o.AddPolicy(CorsAllowedOriginsPolicyName, builder =>

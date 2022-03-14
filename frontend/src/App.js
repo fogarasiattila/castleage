@@ -14,16 +14,22 @@ class App extends Component {
   };
 
   updatePlayersAsync = async () => {
-    const { data } = await axios.get("http://localhost/api/player/getplayers");
-    const tempState = { ...this.state };
-    tempState.players.forEach((t) => {
-      if (t.isSelected) {
-        let user = data.find((d) => t.username === d.username);
-        if (user !== undefined) user.isSelected = true;
-      }
-    });
-    tempState.players = data;
-    this.setState(tempState);
+    try {
+      const { data } = await axios.get(
+        "http://localhost/api/player/getplayers"
+      );
+      const tempState = { ...this.state };
+      tempState.players.forEach((t) => {
+        if (t.isSelected) {
+          let user = data.find((d) => t.username === d.username);
+          if (user !== undefined) user.isSelected = true;
+        }
+      });
+      tempState.players = data;
+      this.setState(tempState);
+    } catch {
+      console.log("Backend hiba!");
+    }
   };
 
   handlePlayerSelect = (t) => {

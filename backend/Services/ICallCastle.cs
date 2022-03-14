@@ -33,7 +33,7 @@ namespace backend.Services
         Task<(ReturnCodeEnum, string)> CollectTerritoryAsync();
 
         Task<(ReturnCodeEnum, string)> DemiPowerAsync(string id);
-        Task<(ReturnCodeEnum, string)> CustomRequestAsync(string uri, bool booster);
+        Task<(ReturnCodeEnum, List<string>)> CustomRequestAsync(string uri, bool booster);
 
         //Task<(ReturnCodeEnum, string)> BoostAsync(string body, string uri);
 

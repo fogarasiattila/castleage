@@ -9,6 +9,7 @@ namespace webbot.Models
     public enum ReturnCodeEnum
     {
         Ok,
+        NotOk,
         NotLoggedIn,
         NoContent,
         Redirect

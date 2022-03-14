@@ -191,8 +191,10 @@ namespace backend.Services
 
         }
 
-        public async Task<(ReturnCodeEnum, string)> CustomRequestAsync(string uri, bool booster)
+        public async Task<(ReturnCodeEnum, List<string>)> CustomRequestAsync(string uri, bool booster)
         {
+            List<string> resultMessages = new();
+
             //https://www.michalbialecki.com/en/2018/04/19/how-to-send-many-requests-in-parallel-in-asp-net-core/
             if (booster)
             {
@@ -200,8 +202,6 @@ namespace backend.Services
                 //{
                 //    await GetRequestAsync(uri);
                 //});
-
-                
 
                 var requests = Enumerable.Range(0, 50).Select(r =>
                 {
@@ -221,9 +221,16 @@ namespace backend.Services
                 });
 
                 var tasks = requests.Select(req => httpClient.SendAsync(req));
-                await Task.WhenAll(tasks);
+                var responds = await Task.WhenAll(tasks);
 
-                return (ReturnCodeEnum.Ok, "Boosted, no parsing...");
+                foreach (var task in responds)
+                {
+                    var content = await task.Content.ReadAsStringAsync();
+                    var parsedPage = parseHtml.InnerText(content, resultsMainWrapperXPath) + '\n';
+                    resultMessages.Add(parsedPage);
+                }
+
+                return (ReturnCodeEnum.Ok, resultMessages);
             }
             else
             {
@@ -237,10 +244,21 @@ namespace backend.Services
                     },
                     Content = new FormUrlEncodedContent(new List<KeyValuePair<string, string>> { new KeyValuePair<string, string>("ajax", "1") })
                 };
-                
-                await httpClient.SendAsync(request);
-                
-                return (ReturnCodeEnum.Ok, "Custom uri, no parsing...");
+
+                var response = await httpClient.SendAsync(request);
+
+                if (response.StatusCode != HttpStatusCode.OK)
+                {
+                    resultMessages.Add(await response.Content.ReadAsStringAsync());
+                    return (ReturnCodeEnum.NotOk, resultMessages);
+
+                }
+
+                var content = await response.Content.ReadAsStringAsync();
+                var parsedPage = parseHtml.InnerText(content, resultsMainWrapperXPath);
+                resultMessages.Add(parsedPage);
+
+                return (ReturnCodeEnum.Ok, resultMessages);
             }
         }
 

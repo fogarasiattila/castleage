@@ -39,7 +39,7 @@ namespace webbot.Controllers
 
                 return Ok($"{player.Username} logged in.");
             }
-            return NotFound($"no cookie received for {player.Username}, maybe wrong password.");
+            return BadRequest($"no cookie received for {player.Username}, maybe wrong password.");
 
         }
 
