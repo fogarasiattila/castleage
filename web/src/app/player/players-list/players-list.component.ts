@@ -1,5 +1,5 @@
 import { Component, OnChanges, OnInit, SimpleChanges } from '@angular/core';
-import { PlayersService } from 'src/app/services/players.service';
+import { PlayerService } from 'src/app/services/player.service';
 import { Player } from 'src/interfaces/player';
 import { SelectionModel } from '@angular/cdk/collections';
 
@@ -18,10 +18,10 @@ export class PlayersListComponent implements OnInit {
     this.initialSelection
   );
 
-  constructor(private playerservice: PlayersService) {}
+  constructor(private playerService: PlayerService) {}
 
   ngOnInit(): void {
-    this.playerservice.getPlayers().subscribe({
+    this.playerService.getPlayers().subscribe({
       next: (response: Player[]) => {
         this.players = response;
       },

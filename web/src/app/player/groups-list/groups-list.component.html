@@ -1,0 +1,30 @@
+<mat-form-field appearance="outline">
+  <mat-select>
+    <mat-option *ngFor="let group of groups" [value]="group.name">{{
+      group.name
+    }}</mat-option>
+  </mat-select>
+  <!-- <mat-hint>Válassz csoportot...</mat-hint> -->
+  <mat-label></mat-label>
+  <mat-icon matPrefix>groups</mat-icon>
+</mat-form-field>
+<mat-selection-list>
+  <mat-list-option *ngFor="let player of players">{{
+    player.displayname
+  }}</mat-list-option>
+</mat-selection-list>
+
+<!-- expansion list megoldás -->
+
+<!-- 
+
+<mat-expansion-panel *ngFor="let group of groups; let i = index">
+  <mat-expansion-panel-header>
+    <mat-panel-title>{{ group.name }}</mat-panel-title>
+    <mat-panel-description
+      >{{ group.name }} csoport tagjai</mat-panel-description
+    >
+  </mat-expansion-panel-header>
+</mat-expansion-panel>
+
+ -->
