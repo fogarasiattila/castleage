@@ -1,6 +1,9 @@
-<mat-form-field appearance="outline">
-  <mat-select>
-    <mat-option *ngFor="let group of groups" [value]="group.name">{{
+<mat-form-field appearance="outline" [formGroup]="form">
+  <mat-select
+    (selectionChange)="onGroupSelection($event.value)"
+    formControlName="groupFilter"
+  >
+    <mat-option *ngFor="let group of groups" [value]="group">{{
       group.name
     }}</mat-option>
   </mat-select>
@@ -8,8 +11,13 @@
   <mat-label></mat-label>
   <mat-icon matPrefix>groups</mat-icon>
 </mat-form-field>
-<mat-selection-list>
-  <mat-list-option *ngFor="let player of players">{{
+<mat-selection-list
+  #playerSelection
+  (selectionChange)="onPlayerSelected(playerSelection.selectedOptions.selected)"
+  dense
+  [(ngModel)]="selectedPlayers"
+>
+  <mat-list-option *ngFor="let player of filteredPlayers" [value]="player">{{
     player.displayname
   }}</mat-list-option>
 </mat-selection-list>

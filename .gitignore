@@ -2,6 +2,7 @@
 
 .ionide
 .vscode
+./backend/database
 
 # compiled output
 /dist

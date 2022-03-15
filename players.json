@@ -4,36 +4,42 @@
       "id": "0",
       "displayname": "Fogarasi Attila",
       "username": "fogarasi.attila@outlook.com",
-      "memberOf": [1]
+      "memberOf": [0]
     },
     {
       "id": "1",
       "displayname": "Jógás Csaj",
       "username": "jogas.csaj@outlook.com",
-      "memberOf": [1, 2]
+      "memberOf": [0, 1]
     },
     {
       "id": "2",
       "displayname": "Kolumbiai Csaj",
       "username": "thecolumbian@gov.co",
-      "memberOf": [1, 3]
+      "memberOf": [0, 2]
     },
     {
       "id": "3",
       "displayname": "Mercédesz",
       "username": "mercedes@szangha.hu",
-      "memberOf": [1, 4]
+      "memberOf": [0, 3]
+    },
+    {
+      "id": "4",
+      "displayname": "Másik jógás csaj",
+      "username": "erettebbjogas@szangha.hu",
+      "memberOf": [0, 1, 3]
     }
   ],
   "groups": [
     {
-      "id": "1",
+      "id": 0,
       "name": "Mindenki"
     },
     {
-      "id": "2",
+      "id": 1,
       "name": "Jógások"
     },
-    { "id": "3", "name": "Egyéb" }
+    { "id": 2, "name": "Egyéb" }
   ]
 }
