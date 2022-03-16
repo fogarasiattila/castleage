@@ -1,0 +1,63 @@
+<div class="group-selection">
+  <app-groups-list
+    [groups]="groups"
+    [players]="players"
+    #group0
+  ></app-groups-list>
+  <div class="arrow-buttons">
+    <div>
+      <button
+        class="arrow-button"
+        mat-mini-fab
+        color="primary"
+        matTooltip="A kijelöltek mozgatása"
+        (click)="onMoveLeftToRight(false)"
+      >
+        <mat-icon>arrow_forward</mat-icon>
+      </button>
+    </div>
+    <div>
+      <button
+        class="arrow-button"
+        mat-mini-fab
+        color="primary"
+        matTooltip="Egész csoport mozgatása"
+        (click)="onMoveLeftToRight(true)"
+      >
+        <mat-icon>double_arrow</mat-icon>
+      </button>
+    </div>
+    <div>
+      <button
+        class="arrow-button"
+        mat-mini-fab
+        color="primary"
+        matTooltip="A kijelöltek mozgatása"
+        (click)="onMoveRightToLeft(false)"
+      >
+        <mat-icon>arrow_backward</mat-icon>
+      </button>
+    </div>
+    <div>
+      <button
+        class="arrow-button"
+        mat-mini-fab
+        color="primary"
+        matTooltip="Egész csoport mozgatása"
+        (click)="onMoveRightToLeft(true)"
+      >
+        <mat-icon style="rotate: 180deg">double_arrow</mat-icon>
+      </button>
+    </div>
+  </div>
+
+  <app-groups-list
+    [groups]="groups"
+    [players]="players"
+    #group1
+  ></app-groups-list>
+</div>
+<div class="submit">
+  <button mat-raised-button>Mentés</button>
+  <button mat-raised-button>Visszaállít</button>
+</div>

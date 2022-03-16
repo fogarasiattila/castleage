@@ -5,10 +5,15 @@ import { MaterialModule } from '../material/material.module';
 import { GroupsListComponent } from './groups-list/groups-list.component';
 import { ReactiveFormsModule } from '@angular/forms';
 import { FormsModule } from '@angular/forms';
+import { EditGroupsComponent } from './edit-groups/edit-groups.component';
 
 @NgModule({
-  declarations: [PlayersListComponent, GroupsListComponent],
+  declarations: [
+    PlayersListComponent,
+    GroupsListComponent,
+    EditGroupsComponent,
+  ],
   imports: [CommonModule, MaterialModule, ReactiveFormsModule, FormsModule],
-  exports: [PlayersListComponent, GroupsListComponent],
+  exports: [PlayersListComponent, GroupsListComponent, EditGroupsComponent],
 })
 export class PlayerModule {}

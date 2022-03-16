@@ -9,6 +9,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
 import { MatIconModule } from '@angular/material/icon';
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 const imports = [
   MatButtonModule,
@@ -20,6 +21,7 @@ const imports = [
   MatInputModule,
   MatSelectModule,
   MatIconModule,
+  MatTooltipModule,
 ];
 const exports = imports;
 

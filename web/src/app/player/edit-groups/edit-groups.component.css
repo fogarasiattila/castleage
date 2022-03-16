@@ -1,0 +1,13 @@
+.arrow-buttons {
+  padding: 20px 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.arrow-button {
+  margin: 5px 0px 5px 0px;
+}
+
+.group-selection {
+}
