@@ -13,6 +13,7 @@ import {
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatListOption } from '@angular/material/list';
 import { Observable } from 'rxjs';
+import { GroupEnum } from 'src/app/enums/groupEnum';
 import { PlayerService } from 'src/app/services/player.service';
 import { Group } from 'src/interfaces/group';
 import { Player } from 'src/interfaces/player';
@@ -30,7 +31,9 @@ export class GroupsListComponent implements OnInit, OnChanges {
   set groups(value: Group[]) {
     if (value[0] === null) return;
     this._groups = value;
-    this.form.patchValue({ groupFilter: value[0] });
+
+    const mindenki = value.find((v) => v.id === GroupEnum.Mindenki);
+    this.form.patchValue({ groupFilter: mindenki });
     this.filteredPlayers = this.players;
   }
   get groups() {
@@ -40,13 +43,21 @@ export class GroupsListComponent implements OnInit, OnChanges {
   @Input()
   set players(value) {
     if (value[0] === null) return;
+    value.sort((a, b) => {
+      if (a.displayname.toLowerCase() < b.displayname.toLowerCase()) return -1;
+      if (a.displayname.toLowerCase() > b.displayname.toLowerCase()) return 1;
+      return 0;
+    });
+
     this._players = value;
-    this.filteredPlayers = value.filter((p) =>
-      p.memberOf.has(this.form.get('groupFilter').value.id)
+    // console.log(this.form.get('groupFilter').value.id);
+    this.filteredPlayers = value.filter(
+      (p) => p.memberOf.indexOf(this.form.get('groupFilter').value.id) !== -1
     );
+    this.selectedPlayers = []; //Töröljük a selection-öket
   }
   get players() {
-    return this._players;
+    return this._players.sort();
   }
 
   filteredPlayers: Player[] = [];
@@ -59,8 +70,10 @@ export class GroupsListComponent implements OnInit, OnChanges {
   constructor(private playerService: PlayerService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
-    console.log('groups-list.component onChanges');
-    console.log(changes);
+    // console.log('groups-list.component onChanges');
+    // console.log(changes);
+    // console.log('unmark players');
+    // console.log(this.form.get('groupFilter').value.id);
   }
 
   ngOnInit(): void {
@@ -75,7 +88,9 @@ export class GroupsListComponent implements OnInit, OnChanges {
 
   onGroupSelection(group: Group) {
     // this.filteredPlayers = this.players.filter((p) => console.log(p.memberOf));
-    this.filteredPlayers = this.players.filter((p) => p.memberOf.has(group.id));
+    this.filteredPlayers = this.players.filter(
+      (p) => p.memberOf.indexOf(group.id) !== -1
+    );
     this.selectedPlayers = this.filteredPlayers.filter((p) =>
       this.selectedPlayers.includes(p)
     );

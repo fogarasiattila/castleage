@@ -9,5 +9,6 @@
   margin: 5px 0px 5px 0px;
 }
 
-.group-selection {
+.main-container {
+  display: flex;
 }

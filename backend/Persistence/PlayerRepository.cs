@@ -1,16 +1,17 @@
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using AutoMapper;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using webbot.Persistence;
+using webbot.Enums;
 
 namespace backend.Persistence
 {
     public interface IPlayerRepository
     {
-        Task<Player> GetPlayerAsync(string username);
+        Task<Player> GetPlayerByNameAsync(string username);
+        Player GetPlayerByName(string username);
 
         Task<List<Player>> GetPlayersAsync();
 
@@ -18,7 +19,17 @@ namespace backend.Persistence
 
         Task<bool> ModifyPlayer(Player player);
 
-        Task Delete(int id);
+        Task DeletePlayerAsync(int id);
+
+        Task<List<Group>> GetGroupsAsync();
+        Group GetGroupByName(string name);
+        Group GetGroupById(int id);
+
+        Task<List<Player>> GetPlayersByGroupIdAsync(int id);
+        Task<List<Player>> GetPlayersByGroupNameAsync(string name);
+        void MovePlayerToGroup(Player player, Group srcGroup, Group dstGroup);
+        void AddGroup(Group group);
+        void DeleteGroup(Group group);
     }
 
 
@@ -56,20 +67,66 @@ namespace backend.Persistence
             return true;
         }
 
-        public async Task<List<Player>> GetPlayersAsync()
+        public Task<List<Player>> GetPlayersAsync()
         {
-            return await this.botContext.Players.OrderBy(p => p.Username).ToListAsync();
+            return this.botContext.Players.OrderBy(p => p.Username).Include(p => p.Groups).ToListAsync();
         }
 
-        public async Task<Player> GetPlayerAsync(string username)
+        public Task<Player> GetPlayerByNameAsync(string username)
         {
-            var players = await GetPlayersAsync();
-            return players.SingleOrDefault(p => p.Username == username);
+            return botContext.Players.FirstOrDefaultAsync(p => p.Username == username);
         }
 
-        public async Task Delete(int id)
+        public async Task DeletePlayerAsync(int id)
         {
             botContext.Players.Remove(await botContext.Players.FindAsync(id));
         }
+
+        public async Task<List<Group>> GetGroupsAsync()
+        {
+            return await botContext.Groups.ToListAsync();
+        }
+
+        public Task<List<Player>> GetPlayersByGroupNameAsync(string name)
+        {
+            return botContext.Players.Include(p => p.Groups).Where(p => p.Groups.Any(g => g.Name == name)).ToListAsync();
+        }
+
+        public Task<List<Player>> GetPlayersByGroupIdAsync(int id)
+        {
+            return botContext.Players.Include(p => p.Groups).Where(p => p.Groups.Any(g => g.Id == id)).ToListAsync();
+        }
+
+        public Group GetGroupByName(string name)
+        {
+            return botContext.Groups.FirstOrDefault(g => g.Name == name);
+        }
+
+        public Group GetGroupById(int id)
+        {
+            return botContext.Groups.FirstOrDefault(g => g.Id == id);
+        }
+
+        public Player GetPlayerByName(string username)
+        {
+            return botContext.Players.Include(p => p.Groups).FirstOrDefault(p => p.Username == username);
+        }
+
+        public void DeleteGroup(Group group)
+        {
+            botContext.Groups.Remove(group);
+        }
+
+        public void AddGroup(Group group)
+        {
+            botContext.Groups.Add(group);
+        }
+
+        public void MovePlayerToGroup(Player player, Group srcGroup, Group dstGroup)
+        {
+            if (srcGroup.Id != (int)Groups.Mindenki) player.Groups.Remove(srcGroup);
+            if (dstGroup.Id != (int)Groups.Mindenki) player.Groups.Add(dstGroup);
+        }
+
     }
 }

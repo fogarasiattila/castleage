@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using backend.Persistence;
@@ -40,40 +41,40 @@ namespace webbot.Controllers
         }
 
         [HttpGet()]
-        public async Task<IActionResult> StartColosseumBattle()
+        public async Task<IActionResult> StartColosseumBattle(CancellationToken cancellationToken)
         {
             //await unitOfWork.SettingsRepository.ToggleColosseumBattle();
             //await unitOfWork.CompleteAsync();
 
-            await colosseumBattleService.StartAsync(new System.Threading.CancellationToken());
+            await colosseumBattleService.StartAsync(cancellationToken);
             return Ok("Starting colosseum...");
         }
 
         [HttpGet()]
-        public async Task<IActionResult> StopColosseumBattle()
+        public async Task<IActionResult> StopColosseumBattle(CancellationToken cancellationToken)
         {
             //await unitOfWork.SettingsRepository.ToggleColosseumBattle();
             //await unitOfWork.CompleteAsync();
 
-            //lefagy ez a thread, ha await-elelm
+            //lefagy ez a thread, ha await-elem
             colosseumBattleService.StopAsync(new System.Threading.CancellationToken());
             return Ok("Cancellation request has been sent...");
         }
 
         [HttpGet()]
-        public async Task<IActionResult> GetColosseumBattleStartStopState()
+        public async Task<IActionResult> GetColosseumBattleStartStopState(CancellationToken cancellationToken)
         {
             var state = await unitOfWork.SettingsRepository.GetStartColosseumBattle();
             return Ok(state);
         }
 
         [HttpGet()]
-        public async Task<IActionResult> ToggleColosseumBattle()
+        public async Task<IActionResult> ToggleColosseumBattle(CancellationToken cancellationToken)
         {
             var state = await unitOfWork.SettingsRepository.ToggleColosseumBattle();
             await unitOfWork.CompleteAsync();
 
-            if (state == State.On) { await StartColosseumBattle(); } else { await StopColosseumBattle(); }
+            if (state == State.On) { await StartColosseumBattle(cancellationToken); } else { await StopColosseumBattle(cancellationToken); }
 
             return Ok(state);
         }

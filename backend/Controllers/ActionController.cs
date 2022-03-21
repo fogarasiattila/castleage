@@ -1,15 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+using System.Threading;
 using System.Threading.Tasks;
 using AutoMapper;
 using backend.Persistence;
 using backend.Services;
 using botservice;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Hosting;
 using webbot.Models;
+using webbot.Persistence;
 
 namespace webbot.Controllers
 {
@@ -33,9 +32,9 @@ namespace webbot.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> CollectResource([FromBody] Player player)
+        public async Task<IActionResult> CollectResource([FromBody] Player player, CancellationToken cancellationToken)
         {
-            this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
+            this.callCastle.Player = await playerRepository.GetPlayerByNameAsync(player.Username);
             var (returncode, returnmessage) = await callCastle.CollectResourceAsync();
 
             if (returncode == ReturnCodeEnum.NotLoggedIn) return Accepted(returnmessage);
@@ -44,9 +43,9 @@ namespace webbot.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> Archive([FromBody] Player player)
+        public async Task<IActionResult> Archive([FromBody] Player player, CancellationToken cancellationToken)
         {
-            this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
+            this.callCastle.Player = await playerRepository.GetPlayerByNameAsync(player.Username);
             var (returncode, returnmessage) = await callCastle.ArchiveAsync();
 
             if (returncode == ReturnCodeEnum.NotLoggedIn) return Accepted(returnmessage);
@@ -55,9 +54,9 @@ namespace webbot.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> DemiPower([FromBody] DemigodRequest demigodRequest)
+        public async Task<IActionResult> DemiPower([FromBody] DemigodRequest demigodRequest, CancellationToken cancellationToken)
         {
-            this.callCastle.Player = await playerRepository.GetPlayerAsync(demigodRequest.Username);
+            this.callCastle.Player = await playerRepository.GetPlayerByNameAsync(demigodRequest.Username);
             var (returncode, returnmessage) = await callCastle.DemiPowerAsync(demigodRequest.DemigodId);
 
             if (returncode == ReturnCodeEnum.NotLoggedIn) return Accepted(returnmessage);
@@ -66,9 +65,9 @@ namespace webbot.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> CrystalPrayer([FromBody] Player player)
+        public async Task<IActionResult> CrystalPrayer([FromBody] Player player, CancellationToken cancellationToken)
         {
-            this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
+            this.callCastle.Player = await playerRepository.GetPlayerByNameAsync(player.Username);
             var (returncode, returnmessage) = await callCastle.CrystalPrayerAsync();
 
             if (returncode == ReturnCodeEnum.NotLoggedIn) return Accepted(returnmessage);
@@ -77,9 +76,9 @@ namespace webbot.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> DailySpin([FromBody] Player player)
+        public async Task<IActionResult> DailySpin([FromBody] Player player, CancellationToken cancellationToken)
         {
-            this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
+            this.callCastle.Player = await playerRepository.GetPlayerByNameAsync(player.Username);
             var (returncode, returnmessage) = await callCastle.DailySpinAsync();
 
             if (returncode == ReturnCodeEnum.NotLoggedIn) return Accepted(returnmessage);
@@ -88,9 +87,9 @@ namespace webbot.Controllers
         }
         
         [HttpPost()]
-        public async Task<IActionResult> CollectTerritory([FromBody] Player player)
+        public async Task<IActionResult> CollectTerritory([FromBody] Player player, CancellationToken cancellationToken)
         {
-            this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
+            this.callCastle.Player = await playerRepository.GetPlayerByNameAsync(player.Username);
             var (returncode, returnmessage) = await callCastle.CollectTerritoryAsync();
 
             if (returncode == ReturnCodeEnum.NotLoggedIn) return Accepted(returnmessage);
@@ -99,9 +98,9 @@ namespace webbot.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> CustomUri([FromBody] CustomRequestModel customRequest)
+        public async Task<IActionResult> CustomUri([FromBody] CustomRequestModel customRequest, CancellationToken cancellationToken)
         {
-            this.callCastle.Player = await playerRepository.GetPlayerAsync(customRequest.Username);
+            this.callCastle.Player = await playerRepository.GetPlayerByNameAsync(customRequest.Username);
             var (returncode, returnmessage) = await callCastle.CustomRequestAsync(customRequest.Uri, customRequest.Booster);
             if (returncode == ReturnCodeEnum.NotLoggedIn) return Accepted(returnmessage);
 
@@ -109,9 +108,9 @@ namespace webbot.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> Colosseum([FromBody] Player player)
+        public async Task<IActionResult> Colosseum([FromBody] Player player, CancellationToken cancellationToken)
         {
-            this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
+            this.callCastle.Player = await playerRepository.GetPlayerByNameAsync(player.Username);
             //var (returncode, returnmessage) = await 
                 callCastle.ColosseumAsync();
 
@@ -127,12 +126,6 @@ namespace webbot.Controllers
 
             //return Ok(returnmessage);
             return Ok("initializing battle...");
-        }
-
-        [HttpGet()]
-        public async Task<List<Player>> GetPlayers()
-        {
-            return await playerRepository.GetPlayersAsync();
         }
     }
 }

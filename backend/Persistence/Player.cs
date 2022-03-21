@@ -1,11 +1,13 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
+using webbot.Persistence;
 
 namespace backend.Persistence
 {
     public class Player
     {
         public int Id { get; set; }
-        public string DisplayName { get; set; }
+        public string Displayname { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
         public string EmailPassword { get; set; }
@@ -14,5 +16,6 @@ namespace backend.Persistence
         public string Cookie { get; set; }
         [NotMapped]
         public bool InBattle { get; set; }
+        public ICollection<Group> Groups { get; set; }
     }
 }

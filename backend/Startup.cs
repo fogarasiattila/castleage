@@ -14,6 +14,8 @@ using webbot.Models;
 using botservice;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Hosting;
+using Newtonsoft.Json;
+using System.Text.Json.Serialization;
 
 namespace webbot
 {
@@ -34,6 +36,8 @@ namespace webbot
             //TODO: FACTORY?
             //https://espressocoder.com/2018/10/08/injecting-a-factory-service-in-asp-net-core/
             //services.AddHostedService<ColosseumBattleService>();
+            //services.AddControllers().AddNewtonsoftJson(conf => conf.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
+            //services.AddControllers().AddJsonOptions(o => o.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.IgnoreCycles);
             services.AddSingleton<ColosseumBattleService>();
             services.AddSingleton<IHostedService>( sp => sp.GetRequiredService<ColosseumBattleService>() );
             services.AddMvc();//.SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
@@ -42,7 +46,10 @@ namespace webbot
             services.AddScoped<IPlayerRepository, PlayerRepository>();
             services.AddScoped<IUnitOfWork, UnitOfWork>();
             services.AddTransient<CookieDelegatingHandler>();
-            services.AddDbContext<BotContext>(options => options.UseSqlite(Configuration.GetConnectionString("DefaultConnection")));
+            services.AddDbContext<BotContext>(options => 
+                options.UseSqlite(Configuration.GetConnectionString("DefaultConnection"))
+                .LogTo(System.Console.Write)
+                );
             //services.AddDbContext<BotContext>(options => options.UseSqlServer(Configuration.GetConnectionString("Default")));
             services.AddHttpClient<ICallCastle, CallCastle>(config =>
             {
@@ -94,7 +101,7 @@ namespace webbot
             app.UseCors(CorsAllowedOriginsPolicyName);
             app.UseEndpoints(endpoints =>
             {
-                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}/{id?}");
+                endpoints.MapControllerRoute("default", "{controller=Home}/{action=Index}");
                 //endpoints.MapControllers().RequireCors(CorsAllowedOriginsPolicyName);
 
             });

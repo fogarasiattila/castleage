@@ -12,7 +12,13 @@ namespace webbot.Mapping
     {
         public MappingProfile()
         {
-            CreateMap<Player, PlayerDto>().ForMember(dest => dest.HasCookie, opt => opt.MapFrom<PlayerCookieBoolResolver>());
+            CreateMap<Player, PlayerDto>()
+                .ForMember(dest => dest.HasCookie, opt => opt.MapFrom<PlayerCookieBoolResolver>())
+                .ForMember(dest => dest.MemberOf, opt => opt.MapFrom<PlayerGroupsResolver>());
+
+            CreateMap<PlayerDto, Player>()
+                .ForMember(dest => dest.Groups, opt => opt.MapFrom<PlayerGroupsResolverReverse>());
+
             CreateMap<Player, Player>();
         }
     }

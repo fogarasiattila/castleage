@@ -31,7 +31,7 @@ namespace webbot.Controllers
         {
             //this.playerRepository.ResetCache();
 
-            this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
+            this.callCastle.Player = await playerRepository.GetPlayerByNameAsync(player.Username);
 
             if (await callCastle.LoginAsync())
             {
@@ -48,7 +48,7 @@ namespace webbot.Controllers
         {
             //this.playerRepository.ResetCache();
     
-            this.callCastle.Player = await playerRepository.GetPlayerAsync(player.Username);
+            this.callCastle.Player = await playerRepository.GetPlayerByNameAsync(player.Username);
 
             await callCastle.LogoutAsync();
             await uow.CompleteAsync();

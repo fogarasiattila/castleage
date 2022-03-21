@@ -1,4 +1,4 @@
-<div class="group-selection">
+<div class="main-container">
   <app-groups-list
     [groups]="groups"
     [players]="players"
@@ -10,7 +10,6 @@
         class="arrow-button"
         mat-mini-fab
         color="primary"
-        matTooltip="A kijelöltek mozgatása"
         (click)="onMoveLeftToRight(false)"
       >
         <mat-icon>arrow_forward</mat-icon>
@@ -21,7 +20,6 @@
         class="arrow-button"
         mat-mini-fab
         color="primary"
-        matTooltip="Egész csoport mozgatása"
         (click)="onMoveLeftToRight(true)"
       >
         <mat-icon>double_arrow</mat-icon>
@@ -32,7 +30,6 @@
         class="arrow-button"
         mat-mini-fab
         color="primary"
-        matTooltip="A kijelöltek mozgatása"
         (click)="onMoveRightToLeft(false)"
       >
         <mat-icon>arrow_backward</mat-icon>
@@ -43,7 +40,6 @@
         class="arrow-button"
         mat-mini-fab
         color="primary"
-        matTooltip="Egész csoport mozgatása"
         (click)="onMoveRightToLeft(true)"
       >
         <mat-icon style="rotate: 180deg">double_arrow</mat-icon>
@@ -56,8 +52,9 @@
     [players]="players"
     #group1
   ></app-groups-list>
+  <app-edit-group></app-edit-group>
 </div>
 <div class="submit">
-  <button mat-raised-button>Mentés</button>
-  <button mat-raised-button>Visszaállít</button>
+  <button mat-raised-button (click)="onSave()">Mentés</button>
+  <button mat-raised-button (click)="onReset()">Visszaállít</button>
 </div>
