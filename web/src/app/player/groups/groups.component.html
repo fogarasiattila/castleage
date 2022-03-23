@@ -1,60 +1,75 @@
 <div class="main-container">
-  <app-groups-list
-    [groups]="groups"
-    [players]="players"
-    #group0
-  ></app-groups-list>
-  <div class="arrow-buttons">
-    <div>
-      <button
-        class="arrow-button"
-        mat-mini-fab
-        color="primary"
-        (click)="onMoveLeftToRight(false)"
-      >
-        <mat-icon>arrow_forward</mat-icon>
-      </button>
+  <div class="content">
+    <app-edit-group
+      #groupEdit0
+      (groupRename)="onGroupRename($event)"
+      [compId]="0"
+    ></app-edit-group>
+    <app-groups-list
+      [groups]="groups"
+      [players]="players"
+      [compId]="0"
+      #group0
+      (groupSelected)="onGroupSelected($event)"
+    ></app-groups-list>
+    <div class="arrow-buttons">
+      <div>
+        <button
+          class="arrow-button"
+          mat-fab
+          color="primary"
+          (click)="onMoveLeftToRight(false)"
+        >
+          <mat-icon>arrow_forward</mat-icon>
+        </button>
+      </div>
+      <div>
+        <button
+          class="arrow-button"
+          mat-fab
+          color="primary"
+          (click)="onMoveLeftToRight(true)"
+        >
+          <mat-icon>double_arrow</mat-icon>
+        </button>
+      </div>
+      <div>
+        <button
+          class="arrow-button"
+          mat-fab
+          color="primary"
+          (click)="onMoveRightToLeft(false)"
+        >
+          <mat-icon>arrow_backward</mat-icon>
+        </button>
+      </div>
+      <div>
+        <button
+          class="arrow-button"
+          mat-fab
+          color="primary"
+          (click)="onMoveRightToLeft(true)"
+        >
+          <mat-icon style="rotate: 180deg">double_arrow</mat-icon>
+        </button>
+      </div>
     </div>
-    <div>
-      <button
-        class="arrow-button"
-        mat-mini-fab
-        color="primary"
-        (click)="onMoveLeftToRight(true)"
-      >
-        <mat-icon>double_arrow</mat-icon>
-      </button>
-    </div>
-    <div>
-      <button
-        class="arrow-button"
-        mat-mini-fab
-        color="primary"
-        (click)="onMoveRightToLeft(false)"
-      >
-        <mat-icon>arrow_backward</mat-icon>
-      </button>
-    </div>
-    <div>
-      <button
-        class="arrow-button"
-        mat-mini-fab
-        color="primary"
-        (click)="onMoveRightToLeft(true)"
-      >
-        <mat-icon style="rotate: 180deg">double_arrow</mat-icon>
-      </button>
-    </div>
-  </div>
 
-  <app-groups-list
-    [groups]="groups"
-    [players]="players"
-    #group1
-  ></app-groups-list>
-  <app-edit-group></app-edit-group>
-</div>
-<div class="submit">
-  <button mat-raised-button (click)="onSave()">Mentés</button>
-  <button mat-raised-button (click)="onReset()">Visszaállít</button>
+    <app-groups-list
+      [groups]="groups"
+      [players]="players"
+      [compId]="1"
+      #group1
+      (groupSelected)="onGroupSelected($event)"
+    ></app-groups-list>
+    <app-edit-group
+      #groupEdit1
+      (groupRename)="onGroupRename($event)"
+      [compId]="1"
+    ></app-edit-group>
+  </div>
+  <div class="submit">
+    <button mat-raised-button (click)="onSave()">Mentés</button>
+    <button mat-raised-button (click)="onReset()">Visszaállít</button>
+  </div>
 </div>

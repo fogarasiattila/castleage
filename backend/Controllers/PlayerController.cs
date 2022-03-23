@@ -106,14 +106,36 @@ namespace webbot.Controllers
             return Ok("Moved to group.");
         }
 
-        [HttpGet()]
-        public async Task AddGroup(string name, CancellationToken cancellationToken)
+        [HttpPost()]
+        public async Task<Group> AddOrModifyGroup([FromBody]Group groupDto, CancellationToken cancellationToken)
         {
-            if (name == Groups.Mindenki.ToString()) return;
+            if (!ModelState.IsValid) return null;
+            if (groupDto.Name is null) return null;
 
-            var group = new Group { Name = name };
-            uow.PlayerRepository.AddGroup(group);
+            if (groupDto.Id == (int)Groups.Mindenki || groupDto.Name == Groups.Mindenki.ToString()) return null;
+
+            if (groupDto.Id == (int)Groups.UjCsoport) { NewGroup(groupDto); } else ModifyGroup(groupDto);
+            
             await uow.CompleteAsync();
+            return groupDto;
+
+        }
+
+        private void ModifyGroup(Group groupDto)
+        {
+            var group = uow.PlayerRepository.GetGroupById(groupDto.Id);
+            group.Name = groupDto.Name;
+            uow.PlayerRepository.ModifyGroup(group);
+        }
+
+        private void NewGroup(Group groupDto)
+        {
+            uow.PlayerRepository.NewGroup(groupDto);
+        }
+
+        private int ModifyGroup()
+        {
+            throw new NotImplementedException();
         }
 
         [HttpGet()]
@@ -129,6 +151,10 @@ namespace webbot.Controllers
         [HttpPost()]
         public async Task Players([FromBody] PlayerDto[] playerDtos, CancellationToken cancellationToken)
         {
+            //validációk! pl. nem lehet 0-ás memberOf
+            //...
+
+
             var allGroups = botContext.Groups.ToList();
             var mindenkiGroup = allGroups.Find(g => g.Id == (int)Groups.Mindenki);
 

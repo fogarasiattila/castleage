@@ -10,20 +10,27 @@ import {
 import { ActivatedRoute, Router } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
+import { GroupEnum } from 'src/app/enums/groupEnum';
 import { PlayerService } from 'src/app/services/player.service';
 import { Group } from 'src/interfaces/group';
 import { Player } from 'src/interfaces/player';
 
+type GroupWithComponentId = { group: Group; compId: number };
+type GroupRename = { srcGrp: number; dstGrp: number; compId: number };
+
 @Component({
-  selector: 'app-edit-groups',
+  selector: 'app-groups',
   templateUrl: './groups.component.html',
   styleUrls: ['./groups.component.css'],
 })
 export class GroupsComponent implements OnInit {
   @ViewChild('group0', { static: true }) group0;
   @ViewChild('group1', { static: true }) group1;
+  @ViewChild('groupEdit0', { static: true }) groupEdit0;
+  @ViewChild('groupEdit1', { static: true }) groupEdit1;
   groups: Group[] = [null];
   players: Player[] = [null];
+  // intoGroup: Group;
 
   constructor(
     private playerService: PlayerService,
@@ -79,7 +86,32 @@ export class GroupsComponent implements OnInit {
         selected.memberOf.push(rightGroupId); //ha még nem tagja a csoportnak, adja hozzá
       }
     });
-    if (change) this.players = changeRef;
+    if (change) {
+      // this.intoGroup = this.groups.find((g) => g.id === rightGroupId);
+      this.players = changeRef;
+      // console.log(this.players);
+    }
+  }
+
+  onGroupSelected(event: GroupWithComponentId) {
+    if (event.compId === 0) this.groupEdit0.groupSelected = event.group;
+    else if (event.compId === 1) this.groupEdit1.groupSelected = event.group;
+  }
+
+  onGroupRename(event: GroupRename) {
+    if (event.srcGrp !== event.dstGrp) {
+      const playersToChangeIdZero =
+        event.compId === 0
+          ? this.group0.filteredPlayers
+          : this.group1.filteredPlayers;
+
+      playersToChangeIdZero.forEach((p) => {
+        const idx = p.memberOf.indexOf(GroupEnum.NewGroup);
+        p.memberOf[idx] = event.dstGrp;
+      });
+    }
+
+    this.playerService.getGroups().subscribe((r) => (this.groups = r));
   }
 
   onSave() {

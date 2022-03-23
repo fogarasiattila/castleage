@@ -5,6 +5,7 @@ using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using webbot.Persistence;
 using webbot.Enums;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace backend.Persistence
 {
@@ -28,8 +29,9 @@ namespace backend.Persistence
         Task<List<Player>> GetPlayersByGroupIdAsync(int id);
         Task<List<Player>> GetPlayersByGroupNameAsync(string name);
         void MovePlayerToGroup(Player player, Group srcGroup, Group dstGroup);
-        void AddGroup(Group group);
+        void NewGroup(Group group);
         void DeleteGroup(Group group);
+        void ModifyGroup(Group group);
     }
 
 
@@ -117,9 +119,14 @@ namespace backend.Persistence
             botContext.Groups.Remove(group);
         }
 
-        public void AddGroup(Group group)
+        public void NewGroup(Group group)
         {
             botContext.Groups.Add(group);
+        }
+
+        public void ModifyGroup(Group group)
+        {
+            botContext.Update(group);
         }
 
         public void MovePlayerToGroup(Player player, Group srcGroup, Group dstGroup)

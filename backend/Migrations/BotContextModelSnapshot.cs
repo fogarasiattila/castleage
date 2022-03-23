@@ -53,7 +53,7 @@ namespace webbot.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Players");
+                    b.ToTable("Players", (string)null);
                 });
 
             modelBuilder.Entity("backend.Persistence.Settings", b =>
@@ -66,7 +66,7 @@ namespace webbot.Migrations
 
                     b.HasKey("Name");
 
-                    b.ToTable("Settings");
+                    b.ToTable("Settings", (string)null);
                 });
 
             modelBuilder.Entity("GroupPlayer", b =>
@@ -81,7 +81,7 @@ namespace webbot.Migrations
 
                     b.HasIndex("PlayersId");
 
-                    b.ToTable("GroupPlayer");
+                    b.ToTable("GroupPlayer", (string)null);
                 });
 
             modelBuilder.Entity("webbot.Persistence.Group", b =>
@@ -95,7 +95,7 @@ namespace webbot.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Groups");
+                    b.ToTable("Groups", (string)null);
 
                     b.HasData(
                         new

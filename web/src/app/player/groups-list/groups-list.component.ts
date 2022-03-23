@@ -18,6 +18,8 @@ import { PlayerService } from 'src/app/services/player.service';
 import { Group } from 'src/interfaces/group';
 import { Player } from 'src/interfaces/player';
 
+type GroupWithComponentId = { group: Group; compId: number };
+
 @Component({
   selector: 'app-groups-list',
   templateUrl: './groups-list.component.html',
@@ -26,6 +28,8 @@ import { Player } from 'src/interfaces/player';
 export class GroupsListComponent implements OnInit, OnChanges {
   _groups: Group[] = [];
   _players: Player[] = [];
+
+  @Output() groupSelected = new EventEmitter<GroupWithComponentId>();
 
   @Input()
   set groups(value: Group[]) {
@@ -60,6 +64,8 @@ export class GroupsListComponent implements OnInit, OnChanges {
     return this._players.sort();
   }
 
+  @Input() compId: number;
+
   filteredPlayers: Player[] = [];
   selectedPlayers: Player[] = [];
 
@@ -77,7 +83,7 @@ export class GroupsListComponent implements OnInit, OnChanges {
   }
 
   ngOnInit(): void {
-    console.log('groups-list.component init');
+    // console.log(`groups-list.component init ${this.childReference}`);
     // this.groups$.subscribe((gs) => (this.groups = gs));
   }
 
@@ -94,5 +100,6 @@ export class GroupsListComponent implements OnInit, OnChanges {
     this.selectedPlayers = this.filteredPlayers.filter((p) =>
       this.selectedPlayers.includes(p)
     );
+    this.groupSelected.emit({ compId: this.compId, group });
   }
 }

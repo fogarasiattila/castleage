@@ -4,6 +4,7 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { Player } from 'src/interfaces/player';
 import { Group } from 'src/interfaces/group';
 import { map } from 'rxjs/operators';
+import { _const_newGroupName } from '../enums/groupEnum';
 
 @Injectable({
   providedIn: 'root',
@@ -22,15 +23,20 @@ export class PlayerService {
       .get<Group[]>('http://localhost/api/Player/GetGroups')
       .pipe(
         map((result) => {
-          result.unshift({ id: 0, name: '<Új csoport>' });
+          result.sort((a, b) => {
+            if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
+            if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
+            return 0;
+          });
+          result.unshift({ id: 0, name: _const_newGroupName });
           return result;
         })
       );
   }
 
-  sendGroups(groups: Group[]): Observable<Group[]> {
-    return this.httpClient.post<Group[]>(
-      'http://localhost/api/Player/Groups',
+  sendGroup(groups: Group): Observable<Group> {
+    return this.httpClient.post<Group>(
+      'http://localhost/api/Player/AddOrModifyGroup',
       groups
     );
   }
