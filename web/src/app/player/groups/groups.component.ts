@@ -1,3 +1,4 @@
+import { ThisReceiver } from '@angular/compiler';
 import {
   Component,
   ElementRef,
@@ -7,7 +8,12 @@ import {
   ViewChild,
   ViewChildren,
 } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import {
+  ActivatedRoute,
+  NavigationEnd,
+  NavigationExtras,
+  Router,
+} from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { GroupEnum } from 'src/app/enums/groupEnum';
@@ -16,7 +22,7 @@ import { Group } from 'src/interfaces/group';
 import { Player } from 'src/interfaces/player';
 
 type GroupWithComponentId = { group: Group; compId: number };
-type GroupRename = { srcGrp: number; dstGrp: number; compId: number };
+type GroupRename = { srcGrp: number; dstGrp: Group; compId: number };
 
 @Component({
   selector: 'app-groups',
@@ -39,7 +45,15 @@ export class GroupsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
+    this.refreshGroups();
+    this.refreshPlayers();
+  }
+
+  refreshGroups() {
     this.playerService.getGroups().subscribe((r) => (this.groups = r));
+  }
+
+  refreshPlayers() {
     this.playerService
       .getPlayers()
       .pipe(
@@ -99,7 +113,7 @@ export class GroupsComponent implements OnInit {
   }
 
   onGroupRename(event: GroupRename) {
-    if (event.srcGrp !== event.dstGrp) {
+    if (event.srcGrp !== event.dstGrp.id) {
       const playersToChangeIdZero =
         event.compId === 0
           ? this.group0.filteredPlayers
@@ -111,17 +125,28 @@ export class GroupsComponent implements OnInit {
       });
     }
 
-    this.playerService.getGroups().subscribe((r) => (this.groups = r));
+    this.refreshGroups();
+
+    event.compId === 0
+      ? this.group0.form.patchValue({ groupFilter: event.dstGrp })
+      : this.group0.form.patchValue({ groupFilter: event.dstGrp });
   }
 
   onSave() {
     const tempPlayers = this.players.filter((p) => p.touched);
     this.playerService.sendPlayers(tempPlayers).subscribe({
-      next: (result) => console.log(result),
+      next: (result) => {
+        console.log(result);
+        this.refreshPlayers();
+      },
+      error: (e) => console.log(e.message),
     });
   }
 
   onReset() {
-    this.router.navigate([this.router.url]);
+    this.refreshGroups();
+    this.refreshPlayers();
+    this.onGroupSelected({ compId: 0, group: this.group0 });
+    this.onGroupSelected({ compId: 1, group: this.group1 });
   }
 }

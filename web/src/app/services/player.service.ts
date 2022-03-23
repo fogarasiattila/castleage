@@ -4,7 +4,12 @@ import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { Player } from 'src/interfaces/player';
 import { Group } from 'src/interfaces/group';
 import { map } from 'rxjs/operators';
-import { _const_newGroupName } from '../enums/groupEnum';
+import {
+  GroupEnum,
+  _const_mindenkiRename,
+  _const_newGroupName,
+} from '../enums/groupEnum';
+import { GroupsComponent } from '../player/groups/groups.component';
 
 @Injectable({
   providedIn: 'root',
@@ -23,6 +28,8 @@ export class PlayerService {
       .get<Group[]>('http://localhost/api/Player/GetGroups')
       .pipe(
         map((result) => {
+          const mindenki = result.find((g) => g.id === GroupEnum.Mindenki);
+          mindenki.name = _const_mindenkiRename;
           result.sort((a, b) => {
             if (a.name.toLowerCase() < b.name.toLowerCase()) return -1;
             if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;

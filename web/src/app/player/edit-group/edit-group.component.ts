@@ -16,7 +16,7 @@ import {
 import { PlayerService } from 'src/app/services/player.service';
 import { Group } from 'src/interfaces/group';
 
-type GroupRename = { srcGrp: number; dstGrp: number; compId: number };
+type GroupRename = { srcGrp: number; dstGrp: Group; compId: number };
 
 @Component({
   selector: 'app-edit-group',
@@ -94,7 +94,7 @@ export class EditGroupComponent implements OnInit {
       next: (r) => {
         this.groupRename.emit({
           srcGrp: saveGroup.id,
-          dstGrp: r.id,
+          dstGrp: r,
           compId: this.compId,
         });
       },
