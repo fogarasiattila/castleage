@@ -10,6 +10,7 @@ import {
   _const_newGroupName,
 } from '../enums/groupEnum';
 import { GroupsComponent } from '../player/groups/groups.component';
+import { GroupsAndPlayersDto } from 'src/interfaces/groupsAndPlayersDto';
 
 @Injectable({
   providedIn: 'root',
@@ -18,9 +19,9 @@ export class PlayerService {
   constructor(private httpClient: HttpClient) {}
 
   getPlayers(): Observable<Player[]> {
-    return this.httpClient.get<Player[]>(
-      'http://localhost/api/Player/GetPlayers'
-    );
+    return this.httpClient
+      .get<Player[]>('http://localhost/api/Player/GetPlayers')
+      .pipe();
   }
 
   getGroups(): Observable<Group[]> {
@@ -35,23 +36,33 @@ export class PlayerService {
             if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
             return 0;
           });
-          result.unshift({ id: 0, name: _const_newGroupName });
+          result.unshift({ id: 0, name: _const_newGroupName, touched: false });
           return result;
         })
       );
   }
 
-  sendGroup(groups: Group): Observable<Group> {
+  sendGroup(group: Group): Observable<Group> {
     return this.httpClient.post<Group>(
       'http://localhost/api/Player/AddOrModifyGroup',
-      groups
+      group
     );
   }
 
-  sendPlayers(players: Player[]): Observable<Player[]> {
-    return this.httpClient.post<Player[]>(
+  sendGroups(groups: Group[]) {}
+
+  sendPlayers(
+    groupsAndPlayers: GroupsAndPlayersDto
+  ): Observable<GroupsAndPlayersDto> {
+    return this.httpClient.post<GroupsAndPlayersDto>(
       'http://localhost/api/Player/Players',
-      players
+      groupsAndPlayers
+    );
+  }
+
+  deleteGroup(group: Group): Observable<object> {
+    return this.httpClient.get(
+      `http://localhost/api/Player/DeleteGroup?id=${group.id}`
     );
   }
 }

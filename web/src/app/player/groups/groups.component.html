@@ -2,8 +2,10 @@
   <div class="content">
     <app-edit-group
       #groupEdit0
-      (groupRename)="onGroupRename($event)"
+      (createGroup)="onCreateGroup($event)"
+      (deleteGroup)="onDeleteGroup($event)"
       [compId]="0"
+      [groupNames]="groupNames"
     ></app-edit-group>
     <app-groups-list
       [groups]="groups"
@@ -64,8 +66,10 @@
     ></app-groups-list>
     <app-edit-group
       #groupEdit1
-      (groupRename)="onGroupRename($event)"
+      (createGroup)="onCreateGroup($event)"
+      (deleteGroup)="onDeleteGroup($event)"
       [compId]="1"
+      [groupNames]="groupNames"
     ></app-edit-group>
   </div>
   <div class="submit">

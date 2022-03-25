@@ -16,13 +16,18 @@ import {
 } from '@angular/router';
 import { BehaviorSubject } from 'rxjs';
 import { map } from 'rxjs/operators';
-import { GroupEnum } from 'src/app/enums/groupEnum';
+import {
+  GroupEnum,
+  _const_newGroupName,
+  _const_newGroupNameClean,
+} from 'src/app/enums/groupEnum';
 import { PlayerService } from 'src/app/services/player.service';
 import { Group } from 'src/interfaces/group';
+import { GroupsAndPlayersDto } from 'src/interfaces/groupsAndPlayersDto';
 import { Player } from 'src/interfaces/player';
+import { GroupsListComponent } from '../groups-list/groups-list.component';
 
 type GroupWithComponentId = { group: Group; compId: number };
-type GroupRename = { srcGrp: number; dstGrp: Group; compId: number };
 
 @Component({
   selector: 'app-groups',
@@ -35,8 +40,9 @@ export class GroupsComponent implements OnInit {
   @ViewChild('groupEdit0', { static: true }) groupEdit0;
   @ViewChild('groupEdit1', { static: true }) groupEdit1;
   groups: Group[] = [null];
+  groupNames: string[] = [];
   players: Player[] = [null];
-  // intoGroup: Group;
+  newGroupRef: number = -1;
 
   constructor(
     private playerService: PlayerService,
@@ -50,7 +56,10 @@ export class GroupsComponent implements OnInit {
   }
 
   refreshGroups() {
-    this.playerService.getGroups().subscribe((r) => (this.groups = r));
+    this.playerService.getGroups().subscribe((r) => {
+      this.groups = r;
+      r.forEach((g) => this.groupNames.push(g.name));
+    });
   }
 
   refreshPlayers() {
@@ -85,58 +94,95 @@ export class GroupsComponent implements OnInit {
       : srcGrp.selectedPlayers;
     if (leftSelectedPlayers.length === 0) return;
     const leftGroupId: number = srcGrp.form.get('groupFilter').value.id;
-    const rightGroupId: number = dstGrp.form.get('groupFilter').value.id;
+    let rightGroupId: number = dstGrp.form.get('groupFilter').value.id;
+    const rightGroupName: string =
+      rightGroupId !== GroupEnum.NewGroup
+        ? dstGrp.form.get('groupFilter').value.name
+        : _const_newGroupNameClean;
+
     if (leftGroupId === rightGroupId) return;
     const changeRef = [...this.players]; //új referencia az Angular change detection okán
+
+    if (rightGroupId === GroupEnum.NewGroup) {
+      //ha új csoport, hozzon létre egyet
+      rightGroupName;
+      var createdGroup = this.createNewGroup(rightGroupName);
+      this.groups.push(createdGroup);
+
+      rightGroupId = createdGroup.id;
+    }
+
     leftSelectedPlayers.forEach((selected) => {
-      if (leftGroupId !== 1)
+      if (leftGroupId !== GroupEnum.Mindenki)
         selected.memberOf.splice(selected.memberOf.indexOf(leftGroupId), 1); //törlés a src group-ból, ha nem "Mindenki"
+      selected.touched = true;
+
       if (
-        rightGroupId === 1 ||
+        //ha még nem tagja a csoportnak, adja hozzá
+        rightGroupId !== GroupEnum.Mindenki &&
         selected.memberOf.indexOf(rightGroupId) === -1
       ) {
         change = true;
         selected.touched = true;
-        selected.memberOf.push(rightGroupId); //ha még nem tagja a csoportnak, adja hozzá
+        // if (createdGroup) selected.memberOfNew.push(createdGroup.name); // ha új csoport, adja hozzá a memberOfNew-hoz
+        selected.memberOf.push(rightGroupId);
       }
     });
-    if (change) {
-      // this.intoGroup = this.groups.find((g) => g.id === rightGroupId);
-      this.players = changeRef;
-      // console.log(this.players);
+
+    if (rightGroupId < GroupEnum.NewGroup && createdGroup) {
+      //ha új csoport, akkor váltson át rá
+      dstGrp.form.patchValue({ groupFilter: createdGroup });
+      this.onGroupSelected({ compId: dstGrp.compId, group: createdGroup });
     }
+
+    this.players = changeRef;
+  }
+
+  createNewGroup(origName: string) {
+    let name = origName;
+    let groupNum = 0;
+
+    while (this.groups.some((g) => g.name === name)) {
+      //Új csoport számozás növelése, amíg nincs találat
+      name = `${origName}${groupNum++}`;
+    }
+    const group: Group = {
+      id: this.newGroupRef--,
+      name: name,
+      touched: true,
+    };
+
+    return group;
   }
 
   onGroupSelected(event: GroupWithComponentId) {
-    if (event.compId === 0) this.groupEdit0.groupSelected = event.group;
-    else if (event.compId === 1) this.groupEdit1.groupSelected = event.group;
+    if (event.compId === 0) {
+      this.groupEdit0.groupSelected = event.group;
+      this.groupEdit0.selectedPlayers = [];
+    } else if (event.compId === 1) {
+      this.groupEdit1.groupSelected = event.group;
+      this.groupEdit1.selectedPlayers = [];
+    }
   }
 
-  onGroupRename(event: GroupRename) {
-    if (event.srcGrp !== event.dstGrp.id) {
-      const playersToChangeIdZero =
-        event.compId === 0
-          ? this.group0.filteredPlayers
-          : this.group1.filteredPlayers;
-
-      playersToChangeIdZero.forEach((p) => {
-        const idx = p.memberOf.indexOf(GroupEnum.NewGroup);
-        p.memberOf[idx] = event.dstGrp;
-      });
-    }
-
-    this.refreshGroups();
-
-    event.compId === 0
-      ? this.group0.form.patchValue({ groupFilter: event.dstGrp })
-      : this.group0.form.patchValue({ groupFilter: event.dstGrp });
+  onCreateGroup(name: string) {
+    const changeRef = [...this.groups];
+    changeRef.push(this.createNewGroup(name));
+    this.groups = changeRef;
   }
 
   onSave() {
+    const tempGroups = this.groups.filter((g) => g.touched);
     const tempPlayers = this.players.filter((p) => p.touched);
-    this.playerService.sendPlayers(tempPlayers).subscribe({
+    if (tempGroups.length === 0 && tempPlayers.length === 0) return;
+
+    const data: GroupsAndPlayersDto = {
+      groups: tempGroups,
+      players: tempPlayers,
+    };
+    this.playerService.sendPlayers(data).subscribe({
       next: (result) => {
-        console.log(result);
+        this.refreshGroups();
         this.refreshPlayers();
       },
       error: (e) => console.log(e.message),
@@ -148,5 +194,21 @@ export class GroupsComponent implements OnInit {
     this.refreshPlayers();
     this.onGroupSelected({ compId: 0, group: this.group0 });
     this.onGroupSelected({ compId: 1, group: this.group1 });
+  }
+
+  onDeleteGroup(group: Group) {
+    if (group.id < GroupEnum.Mindenki) {
+      this.groups.splice(this.groups.indexOf(group), 0);
+      this.players.forEach((p) => {
+        if (p.memberOf.includes(group.id))
+          p.memberOf.splice(p.memberOf.indexOf(group.id), 0);
+      });
+      this.onReset();
+    } else {
+      this.playerService.deleteGroup(group).subscribe({
+        next: (r) => this.onReset(),
+        error: (e) => console.log(e.message),
+      });
+    }
   }
 }

@@ -54,7 +54,6 @@ export class GroupsListComponent implements OnInit, OnChanges {
     });
 
     this._players = value;
-    // console.log(this.form.get('groupFilter').value.id);
     this.filteredPlayers = value.filter(
       (p) => p.memberOf.indexOf(this.form.get('groupFilter').value.id) !== -1
     );
@@ -75,31 +74,20 @@ export class GroupsListComponent implements OnInit, OnChanges {
 
   constructor(private playerService: PlayerService) {}
 
-  ngOnChanges(changes: SimpleChanges): void {
-    // console.log('groups-list.component onChanges');
-    // console.log(changes);
-    // console.log('unmark players');
-    // console.log(this.form.get('groupFilter').value.id);
-  }
+  ngOnChanges(changes: SimpleChanges): void {}
 
-  ngOnInit(): void {
-    // console.log(`groups-list.component init ${this.childReference}`);
-    // this.groups$.subscribe((gs) => (this.groups = gs));
-  }
+  ngOnInit(): void {}
 
-  onPlayerSelected(options: MatListOption[]) {
-    // options.forEach((o) => console.log(o.value));
-    // console.log(this.selectedPlayers);
-  }
+  onPlayerSelected(options: MatListOption[]) {}
 
   onGroupSelection(group: Group) {
-    // this.filteredPlayers = this.players.filter((p) => console.log(p.memberOf));
+    this.selectedPlayers = [];
     this.filteredPlayers = this.players.filter(
       (p) => p.memberOf.indexOf(group.id) !== -1
     );
-    this.selectedPlayers = this.filteredPlayers.filter((p) =>
-      this.selectedPlayers.includes(p)
-    );
+    // this.selectedPlayers = this.filteredPlayers.filter((p) =>
+    //   this.selectedPlayers.includes(p)
+    // );
     this.groupSelected.emit({ compId: this.compId, group });
   }
 }

@@ -15,8 +15,7 @@ import {
 } from 'src/app/enums/groupEnum';
 import { PlayerService } from 'src/app/services/player.service';
 import { Group } from 'src/interfaces/group';
-
-type GroupRename = { srcGrp: number; dstGrp: Group; compId: number };
+import { GroupsComponent } from '../groups/groups.component';
 
 @Component({
   selector: 'app-edit-group',
@@ -25,10 +24,10 @@ type GroupRename = { srcGrp: number; dstGrp: Group; compId: number };
 })
 export class EditGroupComponent implements OnInit {
   _group: Group;
-  @Output() groupRename = new EventEmitter<GroupRename>();
+  @Output() createGroup = new EventEmitter<string>();
+  @Output() deleteGroup = new EventEmitter<Group>();
   @Input() compId: number;
-
-  @Input()
+  @Input() groupNames: string[];
   set groupSelected(value: Group) {
     if (!value) return;
     this._group = value;
@@ -72,33 +71,32 @@ export class EditGroupComponent implements OnInit {
   newGroupValidator(control: FormControl): { [s: string]: boolean } {
     if (_const_newGroupNameREgxp.exec(control.value))
       return { invalidGroupName: true };
+    if (this.groupNames.includes(control.value)) return { nameExists: true };
     return null;
   }
 
   onReset() {
-    if (this._group.name) {
+    if (this.groupSelected) {
       this.form.reset();
       this.form.get('groupName').setErrors(null);
 
-      this.groupName = this._group.name;
+      this.groupName = this.groupSelected.name;
     }
   }
 
   onSave() {
-    if (!this.form.valid) return;
-    const saveGroup: Group = {
-      id: this._group.id,
-      name: this.groupName,
-    };
-    this.playerService.sendGroup(saveGroup).subscribe({
-      next: (r) => {
-        this.groupRename.emit({
-          srcGrp: saveGroup.id,
-          dstGrp: r,
-          compId: this.compId,
-        });
-      },
-      error: (e) => console.log(e.message),
-    });
+    if (!this.form.valid || this.groupNames.includes(this.groupName)) return;
+
+    if (this.groupSelected.id === GroupEnum.NewGroup) {
+      //ha <Új Csoport>, akkor előbb hozzon létre egy új csoportot
+      this.createGroup.emit(this.groupName);
+    } else {
+      this.groupSelected.name = this.groupName;
+      this.onReset();
+    }
+  }
+
+  onDelete() {
+    this.deleteGroup.emit(this.groupSelected);
   }
 }
