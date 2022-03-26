@@ -16,16 +16,46 @@ import { GroupsAndPlayersDto } from 'src/interfaces/groupsAndPlayersDto';
   providedIn: 'root',
 })
 export class PlayerService {
-  constructor(private httpClient: HttpClient) {}
+  constructor(private httpClient: HttpClient) {
+    this.getPlayers();
 
-  getPlayers(): Observable<Player[]> {
-    return this.httpClient
-      .get<Player[]>('http://localhost/api/Player/GetPlayers')
-      .pipe();
+    this.getGroups();
   }
 
-  getGroups(): Observable<Group[]> {
-    return this.httpClient
+  playersState$ = new BehaviorSubject<Player[]>([]);
+  groupsState$ = new BehaviorSubject<Group[]>([]);
+
+  getPlayers() {
+    this.httpClient
+      .get<Player[]>('http://localhost/api/Player/GetPlayers')
+      .pipe(
+        map((p) => {
+          p.forEach((player) => {
+            player.displayname =
+              player.displayname === null
+                ? player.username
+                : player.displayname;
+          });
+
+          p.sort((a, b) => {
+            if (a.displayname.toLowerCase() < b.displayname.toLowerCase())
+              return -1;
+            if (a.displayname.toLowerCase() > b.displayname.toLowerCase())
+              return 1;
+            return 0;
+          });
+
+          return p;
+        })
+      )
+      .subscribe({
+        next: (r) => this.playersState$.next(r),
+        error: (e) => console.log(e.message),
+      });
+  }
+
+  getGroups() {
+    this.httpClient
       .get<Group[]>('http://localhost/api/Player/GetGroups')
       .pipe(
         map((result) => {
@@ -39,7 +69,11 @@ export class PlayerService {
           result.unshift({ id: 0, name: _const_newGroupName, touched: false });
           return result;
         })
-      );
+      )
+      .subscribe({
+        next: (r) => this.groupsState$.next(r),
+        error: (e) => console.log(e.message),
+      });
   }
 
   sendGroup(group: Group): Observable<Group> {
@@ -51,13 +85,20 @@ export class PlayerService {
 
   sendGroups(groups: Group[]) {}
 
-  sendPlayers(
-    groupsAndPlayers: GroupsAndPlayersDto
-  ): Observable<GroupsAndPlayersDto> {
-    return this.httpClient.post<GroupsAndPlayersDto>(
-      'http://localhost/api/Player/Players',
-      groupsAndPlayers
-    );
+  sendPlayersAndGroups(groupsAndPlayers: GroupsAndPlayersDto) {
+    this.httpClient
+      .post<GroupsAndPlayersDto>(
+        'http://localhost/api/Player/Players',
+        groupsAndPlayers
+      )
+
+      .subscribe({
+        next: (result) => {
+          this.getGroups();
+          this.getPlayers();
+        },
+        error: (e) => console.log(e.message),
+      });
   }
 
   deleteGroup(group: Group): Observable<object> {

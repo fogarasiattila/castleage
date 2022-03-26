@@ -3,6 +3,7 @@ import {
   Component,
   ElementRef,
   OnChanges,
+  OnDestroy,
   OnInit,
   SimpleChanges,
   ViewChild,
@@ -14,7 +15,7 @@ import {
   NavigationExtras,
   Router,
 } from '@angular/router';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 import {
   GroupEnum,
@@ -34,7 +35,7 @@ type GroupWithComponentId = { group: Group; compId: number };
   templateUrl: './groups.component.html',
   styleUrls: ['./groups.component.css'],
 })
-export class GroupsComponent implements OnInit {
+export class GroupsComponent implements OnInit, OnDestroy {
   @ViewChild('group0', { static: true }) group0;
   @ViewChild('group1', { static: true }) group1;
   @ViewChild('groupEdit0', { static: true }) groupEdit0;
@@ -43,6 +44,8 @@ export class GroupsComponent implements OnInit {
   groupNames: string[] = [];
   players: Player[] = [null];
   newGroupRef: number = -1;
+  groupSubscription: Subscription;
+  playerSubscription: Subscription;
 
   constructor(
     private playerService: PlayerService,
@@ -50,33 +53,18 @@ export class GroupsComponent implements OnInit {
     private router: Router
   ) {}
 
+  ngOnDestroy(): void {
+    this.groupSubscription.unsubscribe();
+    this.playerSubscription.unsubscribe();
+  }
+
   ngOnInit(): void {
-    this.refreshGroups();
-    this.refreshPlayers();
-  }
-
-  refreshGroups() {
-    this.playerService.getGroups().subscribe((r) => {
-      this.groups = r;
-      r.forEach((g) => this.groupNames.push(g.name));
+    this.groupSubscription = this.playerService.groupsState$.subscribe({
+      next: (r) => (this.groups = [...r]),
     });
-  }
-
-  refreshPlayers() {
-    this.playerService
-      .getPlayers()
-      .pipe(
-        map((p) => {
-          p.forEach((player) => {
-            player.displayname =
-              player.displayname === null
-                ? player.username
-                : player.displayname;
-          });
-          return p;
-        })
-      )
-      .subscribe((r) => (this.players = r));
+    this.playerSubscription = this.playerService.playersState$.subscribe({
+      next: (r) => (this.players = [...r]),
+    });
   }
 
   onMoveLeftToRight(all: boolean) {
@@ -93,15 +81,16 @@ export class GroupsComponent implements OnInit {
       ? srcGrp.filteredPlayers
       : srcGrp.selectedPlayers;
     if (leftSelectedPlayers.length === 0) return;
-    const leftGroupId: number = srcGrp.form.get('groupFilter').value.id;
-    let rightGroupId: number = dstGrp.form.get('groupFilter').value.id;
+
+    const leftGroupId: number = srcGrp.groupSelected$.getValue().id;
+    let rightGroupId: number = dstGrp.groupSelected$.getValue().id;
+
     const rightGroupName: string =
       rightGroupId !== GroupEnum.NewGroup
-        ? dstGrp.form.get('groupFilter').value.name
+        ? dstGrp.groupSelected$.getValue().name
         : _const_newGroupNameClean;
 
     if (leftGroupId === rightGroupId) return;
-    const changeRef = [...this.players]; //új referencia az Angular change detection okán
 
     if (rightGroupId === GroupEnum.NewGroup) {
       //ha új csoport, hozzon létre egyet
@@ -122,7 +111,6 @@ export class GroupsComponent implements OnInit {
         rightGroupId !== GroupEnum.Mindenki &&
         selected.memberOf.indexOf(rightGroupId) === -1
       ) {
-        change = true;
         selected.touched = true;
         // if (createdGroup) selected.memberOfNew.push(createdGroup.name); // ha új csoport, adja hozzá a memberOfNew-hoz
         selected.memberOf.push(rightGroupId);
@@ -131,11 +119,10 @@ export class GroupsComponent implements OnInit {
 
     if (rightGroupId < GroupEnum.NewGroup && createdGroup) {
       //ha új csoport, akkor váltson át rá
-      dstGrp.form.patchValue({ groupFilter: createdGroup });
-      this.onGroupSelected({ compId: dstGrp.compId, group: createdGroup });
+      dstGrp.groupSelected$.next(createdGroup);
     }
 
-    this.players = changeRef;
+    this.playerService.groupsState$.next(this.groups);
   }
 
   createNewGroup(origName: string) {
@@ -155,22 +142,6 @@ export class GroupsComponent implements OnInit {
     return group;
   }
 
-  onGroupSelected(event: GroupWithComponentId) {
-    if (event.compId === 0) {
-      this.groupEdit0.groupSelected = event.group;
-      this.groupEdit0.selectedPlayers = [];
-    } else if (event.compId === 1) {
-      this.groupEdit1.groupSelected = event.group;
-      this.groupEdit1.selectedPlayers = [];
-    }
-  }
-
-  onCreateGroup(name: string) {
-    const changeRef = [...this.groups];
-    changeRef.push(this.createNewGroup(name));
-    this.groups = changeRef;
-  }
-
   onSave() {
     const tempGroups = this.groups.filter((g) => g.touched);
     const tempPlayers = this.players.filter((p) => p.touched);
@@ -180,21 +151,10 @@ export class GroupsComponent implements OnInit {
       groups: tempGroups,
       players: tempPlayers,
     };
-    this.playerService.sendPlayers(data).subscribe({
-      next: (result) => {
-        this.refreshGroups();
-        this.refreshPlayers();
-      },
-      error: (e) => console.log(e.message),
-    });
+    this.playerService.sendPlayersAndGroups(data);
   }
 
-  onReset() {
-    this.refreshGroups();
-    this.refreshPlayers();
-    this.onGroupSelected({ compId: 0, group: this.group0 });
-    this.onGroupSelected({ compId: 1, group: this.group1 });
-  }
+  onReset() {}
 
   onDeleteGroup(group: Group) {
     if (group.id < GroupEnum.Mindenki) {

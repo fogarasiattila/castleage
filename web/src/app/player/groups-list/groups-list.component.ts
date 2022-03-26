@@ -9,11 +9,12 @@ import {
   OnChanges,
   SimpleChanges,
   ViewChild,
+  OnDestroy,
 } from '@angular/core';
 import { FormControl, FormGroup } from '@angular/forms';
 import { MatListOption } from '@angular/material/list';
-import { Observable } from 'rxjs';
-import { GroupEnum } from 'src/app/enums/groupEnum';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { GroupEnum, _const_mindenkiRename } from 'src/app/enums/groupEnum';
 import { PlayerService } from 'src/app/services/player.service';
 import { Group } from 'src/interfaces/group';
 import { Player } from 'src/interfaces/player';
@@ -25,43 +26,9 @@ type GroupWithComponentId = { group: Group; compId: number };
   templateUrl: './groups-list.component.html',
   styleUrls: ['./groups-list.component.css'],
 })
-export class GroupsListComponent implements OnInit, OnChanges {
-  _groups: Group[] = [];
-  _players: Player[] = [];
-
-  @Output() groupSelected = new EventEmitter<GroupWithComponentId>();
-
-  @Input()
-  set groups(value: Group[]) {
-    if (value[0] === null) return;
-    this._groups = value;
-
-    const mindenki = value.find((v) => v.id === GroupEnum.Mindenki);
-    this.form.patchValue({ groupFilter: mindenki });
-    this.filteredPlayers = this.players;
-  }
-  get groups() {
-    return this._groups;
-  }
-
-  @Input()
-  set players(value) {
-    if (value[0] === null) return;
-    value.sort((a, b) => {
-      if (a.displayname.toLowerCase() < b.displayname.toLowerCase()) return -1;
-      if (a.displayname.toLowerCase() > b.displayname.toLowerCase()) return 1;
-      return 0;
-    });
-
-    this._players = value;
-    this.filteredPlayers = value.filter(
-      (p) => p.memberOf.indexOf(this.form.get('groupFilter').value.id) !== -1
-    );
-    this.selectedPlayers = []; //Töröljük a selection-öket
-  }
-  get players() {
-    return this._players.sort();
-  }
+export class GroupsListComponent implements OnInit, OnDestroy, OnChanges {
+  groups: Group[] = [];
+  players: Player[] = [];
 
   @Input() compId: number;
 
@@ -69,14 +36,67 @@ export class GroupsListComponent implements OnInit, OnChanges {
   selectedPlayers: Player[] = [];
 
   form: FormGroup = new FormGroup({
-    groupFilter: new FormControl([]),
+    groupFilter: new FormControl(),
+  });
+
+  set groupFilter(value: Group) {
+    this.form.patchValue({ groupFilter: value });
+  }
+  get groupFilter(): Group {
+    return this.form.get('groupFilter').value;
+  }
+
+  groupSubscription: Subscription;
+  playerSubscription: Subscription;
+  groupSelected$ = new BehaviorSubject<Group>({
+    id: GroupEnum.Mindenki,
+    name: _const_mindenkiRename,
+    touched: false,
   });
 
   constructor(private playerService: PlayerService) {}
 
+  ngOnDestroy(): void {
+    this.groupSubscription.unsubscribe();
+    this.playerSubscription.unsubscribe();
+  }
+
   ngOnChanges(changes: SimpleChanges): void {}
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    this.groupSelected$.subscribe({
+      next: (g) => {
+        this.groupFilter = g;
+      },
+    });
+
+    this.groupSubscription = this.playerService.groupsState$.subscribe({
+      next: (r) => {
+        if (r.length === 0) return;
+        this.groups = [...r];
+
+        const choosenGroup: Group = this.groupSelected$.getValue()
+          ? this.groupSelected$.getValue()
+          : r.find((v) => v.id === GroupEnum.Mindenki);
+        this.groupSelected$.next(choosenGroup);
+        this.groupSelected$.next(choosenGroup);
+        this.filteredPlayers = this.players.filter((p) =>
+          p.memberOf.includes(choosenGroup.id)
+        );
+      },
+    });
+
+    this.playerSubscription = this.playerService.playersState$.subscribe({
+      next: (r) => {
+        if (r.length === 0) return;
+        this.players = [...r];
+        this.filteredPlayers = r.filter(
+          (p) => p.memberOf.indexOf(this.groupSelected$.getValue().id) !== -1
+        );
+        this.selectedPlayers = []; //Töröljük a selection-öket
+      },
+    });
+  }
 
   onPlayerSelected(options: MatListOption[]) {}
 
@@ -85,9 +105,6 @@ export class GroupsListComponent implements OnInit, OnChanges {
     this.filteredPlayers = this.players.filter(
       (p) => p.memberOf.indexOf(group.id) !== -1
     );
-    // this.selectedPlayers = this.filteredPlayers.filter((p) =>
-    //   this.selectedPlayers.includes(p)
-    // );
-    this.groupSelected.emit({ compId: this.compId, group });
+    this.groupSelected$.next(group);
   }
 }
