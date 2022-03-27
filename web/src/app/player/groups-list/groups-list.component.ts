@@ -28,6 +28,7 @@ type GroupWithComponentId = { group: Group; compId: number };
 })
 export class GroupsListComponent implements OnInit, OnDestroy, OnChanges {
   groups: Group[] = [];
+  nonDeletedGroups: Group[] = [];
   players: Player[] = [];
 
   @Input() compId: number;
@@ -48,18 +49,11 @@ export class GroupsListComponent implements OnInit, OnDestroy, OnChanges {
 
   groupSubscription: Subscription;
   playerSubscription: Subscription;
-  groupSelected$ = new BehaviorSubject<Group>({
-    id: GroupEnum.Mindenki,
-    name: _const_mindenkiRename,
-    touched: false,
-  });
+  groupSelected$ = new BehaviorSubject<Group>(
+    new Group(GroupEnum.Mindenki, _const_mindenkiRename)
+  );
 
   constructor(private playerService: PlayerService) {}
-
-  ngOnDestroy(): void {
-    this.groupSubscription.unsubscribe();
-    this.playerSubscription.unsubscribe();
-  }
 
   ngOnChanges(changes: SimpleChanges): void {}
 
@@ -74,6 +68,7 @@ export class GroupsListComponent implements OnInit, OnDestroy, OnChanges {
       next: (r) => {
         if (r.length === 0) return;
         this.groups = [...r];
+        this.nonDeletedGroups = this.groups.filter((g) => !g.deleted);
 
         const choosenGroup: Group = this.groupSelected$.getValue()
           ? this.groupSelected$.getValue()
@@ -106,5 +101,27 @@ export class GroupsListComponent implements OnInit, OnDestroy, OnChanges {
       (p) => p.memberOf.indexOf(group.id) !== -1
     );
     this.groupSelected$.next(group);
+  }
+
+  onGroupDelete(group: Group) {
+    if (group.id === GroupEnum.Mindenki || group.id === GroupEnum.NewGroup)
+      return;
+
+    this.players.forEach((p) => {
+      if (p.memberOf.includes(group.id)) {
+        p.memberOf.splice(p.memberOf.indexOf(group.id), 1);
+        p.touched = true;
+      }
+    });
+
+    // this.groups.splice(this.groups.indexOf(group), 1);
+    this.playerService.groupsState$.next(this.groups);
+    this.playerService.playersState$.next(this.players);
+    this.onGroupSelection(this.groups.find((g) => g.id === GroupEnum.Mindenki));
+  }
+
+  ngOnDestroy(): void {
+    this.groupSubscription.unsubscribe();
+    this.playerSubscription.unsubscribe();
   }
 }

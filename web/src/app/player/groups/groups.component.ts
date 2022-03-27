@@ -53,11 +53,6 @@ export class GroupsComponent implements OnInit, OnDestroy {
     private router: Router
   ) {}
 
-  ngOnDestroy(): void {
-    this.groupSubscription.unsubscribe();
-    this.playerSubscription.unsubscribe();
-  }
-
   ngOnInit(): void {
     this.groupSubscription = this.playerService.groupsState$.subscribe({
       next: (r) => (this.groups = [...r]),
@@ -133,17 +128,16 @@ export class GroupsComponent implements OnInit, OnDestroy {
       //Új csoport számozás növelése, amíg nincs találat
       name = `${origName}${groupNum++}`;
     }
-    const group: Group = {
-      id: this.newGroupRef--,
-      name: name,
-      touched: true,
-    };
+    const group: Group = new Group(this.newGroupRef--, name);
 
     return group;
   }
 
   onSave() {
-    const tempGroups = this.groups.filter((g) => g.touched);
+    const tempGroups = this.groups.filter(
+      (g) =>
+        g.touched && (!g.deleted || (g.deleted && g.id > GroupEnum.Mindenki))
+    );
     const tempPlayers = this.players.filter((p) => p.touched);
     if (tempGroups.length === 0 && tempPlayers.length === 0) return;
 
@@ -154,7 +148,11 @@ export class GroupsComponent implements OnInit, OnDestroy {
     this.playerService.sendPlayersAndGroups(data);
   }
 
-  onReset() {}
+  onReset() {
+    //ehelyett component reset!
+    this.playerService.getGroups();
+    this.playerService.getPlayers();
+  }
 
   onDeleteGroup(group: Group) {
     if (group.id < GroupEnum.Mindenki) {
@@ -170,5 +168,10 @@ export class GroupsComponent implements OnInit, OnDestroy {
         error: (e) => console.log(e.message),
       });
     }
+  }
+
+  ngOnDestroy(): void {
+    this.groupSubscription.unsubscribe();
+    this.playerSubscription.unsubscribe();
   }
 }

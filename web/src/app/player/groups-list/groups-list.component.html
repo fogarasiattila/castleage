@@ -1,10 +1,13 @@
-<app-edit-group [groupChange$]="this.groupSelected$"></app-edit-group>
+<app-edit-group
+  [groupChange$]="this.groupSelected$"
+  (deleteGroup)="onGroupDelete($event)"
+></app-edit-group>
 <mat-form-field appearance="outline" [formGroup]="form">
   <mat-select
     (selectionChange)="onGroupSelection($event.value)"
     formControlName="groupFilter"
   >
-    <mat-option *ngFor="let group of groups" [value]="group">{{
+    <mat-option *ngFor="let group of nonDeletedGroups" [value]="group">{{
       group.name
     }}</mat-option>
   </mat-select>

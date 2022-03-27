@@ -107,13 +107,10 @@ namespace webbot.Controllers
         }
 
         [HttpGet()]
-        public async Task DeleteGroup(int id, CancellationToken cancellationToken)
+        public void DeleteGroup(Group group)
         {
-            if (id == (int)Groups.Mindenki) return;
-
-            var group = uow.PlayerRepository.GetGroupById(id);
+            if (group.Id == (int)Groups.Mindenki) return;
             uow.PlayerRepository.DeleteGroup(group);
-            await uow.CompleteAsync();
         }
 
         [HttpPost()]
@@ -134,13 +131,17 @@ namespace webbot.Controllers
             {
                 var group = allGroups.FirstOrDefault(g => g.Name == groupDto.Name);
 
-                if (group is not null) continue;
+                if (group is null)
+                {
+                    if (groupDto.Deleted) continue;
 
-                var newGroup = new Group { Name = groupDto.Name };
+                    var newGroup = new Group { Name = groupDto.Name };
 
-                NewGroup(newGroup);
-                
-                mapNewGroups.Add(groupDto.Id, newGroup);
+                    NewGroup(newGroup);
+
+                    mapNewGroups.Add(groupDto.Id, newGroup);
+                }
+                else if (groupDto.Deleted) DeleteGroup(group);
             }
 
             await uow.CompleteAsync();

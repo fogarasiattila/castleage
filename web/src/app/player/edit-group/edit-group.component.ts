@@ -1,7 +1,15 @@
-import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
-import { FormControl, FormGroup, Validators } from '@angular/forms';
-import { Observable } from 'rxjs';
 import {
+  Component,
+  EventEmitter,
+  Input,
+  OnDestroy,
+  OnInit,
+  Output,
+} from '@angular/core';
+import { FormControl, FormGroup, Validators } from '@angular/forms';
+import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import {
+  GroupEnum,
   _const_newGroupName,
   _const_newGroupNameREgxp,
 } from 'src/app/enums/groupEnum';
@@ -13,21 +21,26 @@ import { Group } from 'src/interfaces/group';
   templateUrl: './edit-group.component.html',
   styleUrls: ['./edit-group.component.css'],
 })
-export class EditGroupComponent implements OnInit {
+export class EditGroupComponent implements OnInit, OnDestroy {
   @Output() deleteGroup = new EventEmitter<Group>();
-  @Input() groupChange$: Observable<Group>;
+  @Input() groupChange$: BehaviorSubject<Group>;
+  groupChangeSubscription: Subscription;
+  groupStateSubscription: Subscription;
+
+  groupNames: string[] = [];
+  group: Group;
 
   form = new FormGroup({
-    groupName: new FormControl({ value: null, disabled: true }, [
+    groupName: new FormControl({ value: null }, [
       Validators.required,
       this.newGroupValidator.bind(this),
     ]),
   });
 
-  set groupFromForm(value: string) {
+  set groupName(value: string) {
     this.form.patchValue({ groupName: value });
   }
-  get groupFromForm(): string {
+  get groupName(): string {
     return this.form.get('groupName').value;
   }
 
@@ -36,29 +49,52 @@ export class EditGroupComponent implements OnInit {
   constructor(private playerService: PlayerService) {}
 
   ngOnInit(): void {
-    this.groupChange$.subscribe({
+    this.groupChangeSubscription = this.groupChange$.subscribe({
       next: (g) => {
-        this.groupFromForm = g.name;
+        this.Reset(g);
       },
+    });
+    this.groupStateSubscription = this.playerService.groupsState$.subscribe({
+      next: (groups) => (this.groupNames = groups.map((g) => g.name)),
     });
   }
 
   newGroupValidator(control: FormControl): { [s: string]: boolean } {
     if (_const_newGroupNameREgxp.exec(control.value))
       return { invalidGroupName: true };
-    // if (this.groupNames.includes(control.value)) return { nameExists: true };
+    if (this.groupNames.includes(control.value)) return { nameExists: true };
     return null;
   }
 
-  onReset() {
-    // if (this.groupSelected) {
-    //   this.form.reset();
-    //   this.form.get('groupName').setErrors(null);
+  Reset(group: Group) {
+    this.form.reset();
+    this.groupName = group.name;
+    this.form.get('groupName').setErrors(null);
+    this.group = group;
   }
 
-  onSave() {}
+  onSave() {
+    if (
+      this.group.id === GroupEnum.Mindenki ||
+      this.group.id === GroupEnum.NewGroup
+    )
+      return;
+    this.group.name = this.groupName;
+    this.group.touched = true;
+  }
+
+  onReset() {
+    this.Reset(this.group);
+  }
 
   onDelete() {
-    // this.deleteGroup.emit(this.groupSelected);
+    this.group.touched = true;
+    this.group.deleted = true;
+    this.deleteGroup.emit(this.group);
+  }
+
+  ngOnDestroy(): void {
+    this.groupChangeSubscription.unsubscribe();
+    this.groupStateSubscription.unsubscribe();
   }
 }

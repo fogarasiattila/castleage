@@ -66,7 +66,7 @@ export class PlayerService {
             if (a.name.toLowerCase() > b.name.toLowerCase()) return 1;
             return 0;
           });
-          result.unshift({ id: 0, name: _const_newGroupName, touched: false });
+          result.unshift(new Group(GroupEnum.NewGroup, _const_newGroupName));
           return result;
         })
       )
