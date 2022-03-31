@@ -15,7 +15,15 @@
   <mat-label></mat-label>
   <mat-icon matPrefix>groups</mat-icon>
 </mat-form-field>
-
+<div [formGroup]="form" style="display: inline-block">
+  <mat-checkbox
+    class="select-all-checkbox"
+    (change)="onSelectAll($event.checked)"
+    formControlName="checkAll"
+    [indeterminate]="someChecked()"
+    [checked]="allChecked()"
+  ></mat-checkbox>
+</div>
 <mat-selection-list
   class="selection-list"
   #playerSelection

@@ -38,6 +38,7 @@ export class GroupsListComponent implements OnInit, OnDestroy, OnChanges {
 
   form: FormGroup = new FormGroup({
     groupFilter: new FormControl(),
+    checkAll: new FormControl(false),
   });
 
   set groupFilter(value: Group) {
@@ -61,6 +62,7 @@ export class GroupsListComponent implements OnInit, OnDestroy, OnChanges {
     this.groupSelected$.subscribe({
       next: (g) => {
         this.groupFilter = g;
+        this.form.patchValue({ checkAll: false });
       },
     });
 
@@ -73,7 +75,6 @@ export class GroupsListComponent implements OnInit, OnDestroy, OnChanges {
         const choosenGroup: Group = this.groupSelected$.getValue()
           ? this.groupSelected$.getValue()
           : r.find((v) => v.id === GroupEnum.Mindenki);
-        this.groupSelected$.next(choosenGroup);
         this.groupSelected$.next(choosenGroup);
         this.filteredPlayers = this.players.filter((p) =>
           p.memberOf.includes(choosenGroup.id)
@@ -95,12 +96,32 @@ export class GroupsListComponent implements OnInit, OnDestroy, OnChanges {
 
   onPlayerSelected(options: MatListOption[]) {}
 
+  someChecked() {
+    return (
+      this.selectedPlayers.length > 0 &&
+      this.filteredPlayers.length != this.selectedPlayers.length
+    );
+  }
+
+  allChecked() {
+    return (
+      this.filteredPlayers.length > 0 &&
+      this.filteredPlayers.length == this.selectedPlayers.length
+    );
+  }
+
   onGroupSelection(group: Group) {
     this.selectedPlayers = [];
     this.filteredPlayers = this.players.filter(
       (p) => p.memberOf.indexOf(group.id) !== -1
     );
     this.groupSelected$.next(group);
+  }
+
+  onSelectAll(all: boolean) {
+    all
+      ? (this.selectedPlayers = [...this.filteredPlayers])
+      : (this.selectedPlayers = []);
   }
 
   onGroupDelete(group: Group) {

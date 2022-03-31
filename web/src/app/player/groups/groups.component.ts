@@ -129,6 +129,7 @@ export class GroupsComponent implements OnInit, OnDestroy {
       name = `${origName}${groupNum++}`;
     }
     const group: Group = new Group(this.newGroupRef--, name);
+    group.touched = true;
 
     return group;
   }

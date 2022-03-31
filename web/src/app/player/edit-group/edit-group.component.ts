@@ -51,7 +51,7 @@ export class EditGroupComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.groupChangeSubscription = this.groupChange$.subscribe({
       next: (g) => {
-        this.Reset(g);
+        this.reset(g);
       },
     });
     this.groupStateSubscription = this.playerService.groupsState$.subscribe({
@@ -66,11 +66,14 @@ export class EditGroupComponent implements OnInit, OnDestroy {
     return null;
   }
 
-  Reset(group: Group) {
+  reset(group: Group) {
     this.form.reset();
     this.groupName = group.name;
     this.form.get('groupName').setErrors(null);
     this.group = group;
+    if (group.id === GroupEnum.Mindenki || group.id === GroupEnum.NewGroup)
+      this.form.get('groupName').disable();
+    else this.form.get('groupName').enable();
   }
 
   onSave() {
@@ -84,7 +87,7 @@ export class EditGroupComponent implements OnInit, OnDestroy {
   }
 
   onReset() {
-    this.Reset(this.group);
+    this.reset(this.group);
   }
 
   onDelete() {

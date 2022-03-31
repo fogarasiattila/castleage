@@ -1,9 +1,8 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
-import { GroupsComponent } from './groups/groups.component';
+import { ActionComponent } from './action.component';
 
-const routes: Routes = [{ path: 'groups', component: GroupsComponent }],
-  config = { onSameUrlNavigation: 'reload' };
+const routes: Routes = [{ path: 'actions', component: ActionComponent }];
 
 @NgModule({
   declarations: [],
@@ -11,4 +10,4 @@ const routes: Routes = [{ path: 'groups', component: GroupsComponent }],
   exports: [RouterModule],
   providers: [],
 })
-export class PlayerRoutingModule {}
+export class ActionRoutingModule {}

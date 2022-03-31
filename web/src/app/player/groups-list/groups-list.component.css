@@ -3,3 +3,7 @@
   overflow-y: auto;
   width: 15vw;
 }
+
+.select-all-checkbox {
+  margin-left: 4px;
+}

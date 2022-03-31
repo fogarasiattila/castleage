@@ -93,8 +93,6 @@ namespace webbot.Controllers
             var srcGroup = uow.PlayerRepository.GetGroupByName(srcGroupName);
             var dstGroup = uow.PlayerRepository.GetGroupByName(dstGroupName);
 
-            //if (srcGroup.Id == dstGroup.Id) return;
-
             var player = uow.PlayerRepository.GetPlayerByName(playerName);
 
             if (player.Groups.Contains(dstGroup)) return Ok("already member of the group");
@@ -129,7 +127,7 @@ namespace webbot.Controllers
 
             foreach (var groupDto in groupsAndPlayersDto.Groups)
             {
-                var group = allGroups.FirstOrDefault(g => g.Name == groupDto.Name);
+                var group = allGroups.FirstOrDefault(g => g.Id == groupDto.Id);
 
                 if (group is null)
                 {
@@ -142,32 +140,15 @@ namespace webbot.Controllers
                     mapNewGroups.Add(groupDto.Id, newGroup);
                 }
                 else if (groupDto.Deleted) DeleteGroup(group);
+                else if (groupDto.Name != group.Name) group.Name = groupDto.Name;
             }
 
             await uow.CompleteAsync();
 
             foreach (var playerDto in groupsAndPlayersDto.Players)
             {
-                //var player = mapper.Map<PlayerDto, Player>(playerDto);
                 var player = botContext.Players.Include(p => p.Groups).FirstOrDefault<Player>(p => p.Id == playerDto.Id);
-                //var groups = player
                 player.Groups.Clear();
-
-                //foreach (var newGroupName in playerDto.MemberOfNew)
-                //{
-                //    var group = botContext.Groups.ToList().FirstOrDefault(g => g.Name == newGroupName);
-
-                //    if (group is not null)
-                //    {
-                //        player.Groups.Add(group);
-                //        continue;
-                //    };
-
-                //    var newGroup = new Group { Name = newGroupName };
-
-                //    NewGroup(newGroup);
-                //    //player.Groups.Add(newGroup);
-                //}
 
                 foreach (var groupMemberId in playerDto.MemberOf)
                 {
@@ -192,27 +173,5 @@ namespace webbot.Controllers
         {
             uow.PlayerRepository.NewGroup(newGroup);
         }
-
-        //public async Task<Group> AddOrModifyGroup(Group groupDto, CancellationToken cancellationToken)
-        //{
-        //    if (!ModelState.IsValid) return null;
-        //    if (groupDto.Name is null) return null;
-
-        //    if (groupDto.Id == (int)Groups.Mindenki || groupDto.Name == Groups.Mindenki.ToString()) return null;
-
-        //    if (groupDto.Id < (int)Groups.UjCsoport) { NewGroup(groupDto); } else ModifyGroup(groupDto);
-
-        //    await uow.CompleteAsync();
-        //    return groupDto;
-
-        //}
-
-        //private void ModifyGroup(Group groupDto)
-        //{
-        //    var group = uow.PlayerRepository.GetGroupById(groupDto.Id);
-        //    group.Name = groupDto.Name;
-        //    uow.PlayerRepository.ModifyGroup(group);
-        //}
-
     }
 }

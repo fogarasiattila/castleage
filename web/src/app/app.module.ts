@@ -7,6 +7,7 @@ import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { MaterialModule } from './material/material.module';
 import { PlayerModule } from './player/player.module';
 import { HttpClient, HttpClientModule } from '@angular/common/http';
+import { ActionModule } from './action/action.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -17,6 +18,7 @@ import { HttpClient, HttpClientModule } from '@angular/common/http';
     HttpClientModule,
     MaterialModule,
     PlayerModule,
+    ActionModule,
   ],
   providers: [],
   bootstrap: [AppComponent],
