@@ -1,1 +1,21 @@
-<p>action works!</p>
+<mat-selection-list
+  class="selection-list"
+  (selectionChange)="onGroupSelected()"
+  dense
+  [(ngModel)]="selectedGroups"
+>
+  <mat-list-option *ngFor="let group of groups" [value]="group">{{
+    group.name
+  }}</mat-list-option>
+</mat-selection-list>
+<mat-divider></mat-divider>
+<mat-selection-list
+  class="selection-list"
+  (selectionChange)="onPlayerSelected()"
+  dense
+  [(ngModel)]="selectedPlayers"
+>
+  <mat-list-option *ngFor="let player of players" [value]="player">{{
+    player.displayname
+  }}</mat-list-option>
+</mat-selection-list>
